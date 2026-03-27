@@ -1,12 +1,19 @@
 import { Button } from '@heroui/react';
+import NextLink from 'next/link';
 
-export default function Home() {
+export default function HomePage() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center font-sans bg-black gap-10">
-      <span className="text-3xl">Subscription tracker</span>
-      <Button className="bg-purple-500 hover:bg-purple-400 transition-colors duration-200">
-        Click me
-      </Button>
-    </div>
+    <section className="flex flex-col items-center justify-center gap-8 py-20">
+      <h1 className="text-4xl font-bold text-center">
+        Track Your Subscriptions <br /> and Save Money
+      </h1>
+      <p className="text-lg text-center text-gray-400 max-w-2xl">
+        Manage all your recurring payments in one place. <br />
+        Get insights, alerts, and never miss a due date.
+      </p>
+      <NextLink href="/register">
+        <Button size="lg">Get Started</Button>
+      </NextLink>
+    </section>
   );
 }
