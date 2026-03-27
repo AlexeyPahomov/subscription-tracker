@@ -12,7 +12,9 @@ export default function HomePage() {
         Get insights, alerts, and never miss a due date.
       </p>
       <NextLink href="/register">
-        <Button size="lg">Get Started</Button>
+        <Button size="lg" className="bg-purple-500 hover:bg-purple-600">
+          Get Started
+        </Button>
       </NextLink>
     </section>
   );
