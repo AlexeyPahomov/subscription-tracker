@@ -1,9 +1,14 @@
-'use client';import { appConfig } from '@/config/app.config';
+'use client';
+
+import { useLoginModal } from '@/components/auth/login-modal-provider';
+import { appConfig } from '@/config/app.config';
 import { layoutConfig } from '@/config/layout.config';
 import { Button, Link } from '@heroui/react';
 import NextLink from 'next/link';
 
 export default function Header() {
+  const { openLogin } = useLoginModal();
+
   return (
     <header
       className="sticky top-0 z-50 w-full border-b border-gray-800 bg-black/80 backdrop-blur-lg"
@@ -29,11 +34,9 @@ export default function Header() {
 
         {/* Вход/регистрация */}
         <div className="hidden md:flex items-center gap-2">
-          <NextLink href="/login">
-            <Button variant="secondary" className="text-gray-800">
-              Login
-            </Button>
-          </NextLink>
+          <Button variant="secondary" className="text-gray-800" onPress={openLogin}>
+            Login
+          </Button>
           <NextLink href="/register">
             <Button>Sign Up</Button>
           </NextLink>
