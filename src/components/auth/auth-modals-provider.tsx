@@ -1,15 +1,8 @@
 'use client';
 
 import { registerUser } from '@/actions/registerUser';
-import {
-  Button,
-  Form,
-  Input,
-  Label,
-  Modal,
-  TextField,
-  useOverlayState,
-} from '@heroui/react';
+import { useForm } from '@/hooks/useForm';
+import { Button, Dialog, PasswordInput, TextInput } from '@gravity-ui/uikit';
 import { signIn } from 'next-auth/react';
 import {
   createContext,
@@ -17,6 +10,7 @@ import {
   useMemo,
   useState,
   type ReactNode,
+  type SubmitEvent,
 } from 'react';
 
 type AuthModalsContextValue = {
@@ -28,226 +22,212 @@ type AuthModalsContextValue = {
 
 const AuthModalsContext = createContext<AuthModalsContextValue | null>(null);
 
-function ModalHiddenTrigger({ label }: { label: string }) {
-  return (
-    <Button
-      type="button"
-      className="pointer-events-none absolute h-px w-px overflow-hidden p-0 opacity-0"
-      aria-hidden
-    >
-      {label}
-    </Button>
-  );
-}
-
 export function AuthModalsProvider({ children }: { children: ReactNode }) {
-  const loginState = useOverlayState({ defaultOpen: false });
-  const registerState = useOverlayState({ defaultOpen: false });
+  const [loginOpen, setLoginOpen] = useState(false);
+  const [registerOpen, setRegisterOpen] = useState(false);
 
-  const [loginEmail, setLoginEmail] = useState('');
-  const [loginPassword, setLoginPassword] = useState('');
+  const {
+    values: loginValues,
+    handleChange: handleLoginChange,
+    setValues: setLoginValues,
+  } = useForm({ email: '', password: '' });
+
+  const {
+    values: registerValues,
+    handleChange: handleRegisterChange,
+    setValues: setRegisterValues,
+  } = useForm({ name: '', email: '', password: '' });
+
   const [loginError, setLoginError] = useState<string | null>(null);
   const [loginPending, setLoginPending] = useState(false);
 
-  const [regName, setRegName] = useState('');
-  const [regEmail, setRegEmail] = useState('');
-  const [regPassword, setRegPassword] = useState('');
   const [regError, setRegError] = useState<string | null>(null);
   const [regPending, setRegPending] = useState(false);
 
   const value = useMemo(
     () => ({
-      openLogin: loginState.open,
-      closeLogin: loginState.close,
-      openRegister: registerState.open,
-      closeRegister: registerState.close,
+      openLogin: () => setLoginOpen(true),
+      closeLogin: () => setLoginOpen(false),
+      openRegister: () => setRegisterOpen(true),
+      closeRegister: () => setRegisterOpen(false),
     }),
-    [
-      loginState.open,
-      loginState.close,
-      registerState.open,
-      registerState.close,
-    ],
+    [],
   );
+
+  async function handleLoginSubmit(e: SubmitEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setLoginError(null);
+    setLoginPending(true);
+    try {
+      const res = await signIn('credentials', {
+        email: loginValues.email,
+        password: loginValues.password,
+        redirect: false,
+      });
+      if (res?.error) {
+        setLoginError('Неверный email или пароль');
+        return;
+      }
+      setLoginOpen(false);
+      setLoginValues({ email: '', password: '' });
+    } finally {
+      setLoginPending(false);
+    }
+  }
+
+  async function handleRegisterSubmit(e: SubmitEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setRegError(null);
+    setRegPending(true);
+    try {
+      const created = await registerUser({
+        name: registerValues.name,
+        email: registerValues.email,
+        password: registerValues.password,
+      });
+      if (!created.ok) {
+        if (created.error === 'exists') {
+          setRegError('Пользователь с таким email уже есть');
+        } else {
+          setRegError('Не удалось зарегистрироваться');
+        }
+        return;
+      }
+      const res = await signIn('credentials', {
+        email: registerValues.email,
+        password: registerValues.password,
+        redirect: false,
+      });
+      if (res?.error) {
+        setRegError('Аккаунт создан, но вход не удался');
+        return;
+      }
+      setRegisterOpen(false);
+      setRegisterValues({ name: '', email: '', password: '' });
+    } finally {
+      setRegPending(false);
+    }
+  }
 
   return (
     <AuthModalsContext.Provider value={value}>
       {children}
-      <Modal state={loginState}>
-        <ModalHiddenTrigger label="Вход" />
-        <Modal.Backdrop>
-          <Modal.Container placement="center" size="sm" scroll="inside">
-            <Modal.Dialog className="bg-gray-100">
-              <Modal.Header className="flex flex-row items-center justify-between border-b border-white/10 pb-4">
-                <Modal.Heading className="text-xl font-semibold text-gray-800">
-                  Авторизация
-                </Modal.Heading>
-                <Modal.CloseTrigger aria-label="Закрыть" />
-              </Modal.Header>
-              <Modal.Body className="pt-2">
-                <Form
-                  className="flex flex-col gap-6 px-2"
-                  onSubmit={async (e) => {
-                    e.preventDefault();
-                    setLoginError(null);
-                    setLoginPending(true);
-                    try {
-                      const res = await signIn('credentials', {
-                        email: loginEmail,
-                        password: loginPassword,
-                        redirect: false,
-                      });
-                      if (res?.error) {
-                        setLoginError('Неверный email или пароль');
-                        return;
-                      }
-                      loginState.close();
-                      setLoginEmail('');
-                      setLoginPassword('');
-                    } finally {
-                      setLoginPending(false);
-                    }
-                  }}
-                >
-                  <TextField name="email" type="text" isRequired>
-                    <Label className="text-gray-800">Email</Label>
-                    <Input
-                      placeholder="john@example.com"
-                      value={loginEmail}
-                      onChange={(ev) => setLoginEmail(ev.target.value)}
-                    />
-                  </TextField>
-                  <TextField name="password" type="password" isRequired>
-                    <Label className="text-gray-800">Password</Label>
-                    <Input
-                      placeholder="Enter your password"
-                      value={loginPassword}
-                      onChange={(ev) => setLoginPassword(ev.target.value)}
-                    />
-                  </TextField>
-                  {loginError ? (
-                    <p className="text-sm text-red-600" role="alert">
-                      {loginError}
-                    </p>
-                  ) : null}
-                  <div className="flex justify-end gap-3 pt-2">
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      className="text-gray-800"
-                      onPress={() => loginState.close()}
-                    >
-                      Cancel
-                    </Button>
-                    <Button type="submit" isDisabled={loginPending}>
-                      {loginPending ? '…' : 'Login'}
-                    </Button>
-                  </div>
-                </Form>
-              </Modal.Body>
-            </Modal.Dialog>
-          </Modal.Container>
-        </Modal.Backdrop>
-      </Modal>
+      <Dialog
+        open={loginOpen}
+        size="s"
+        onClose={() => setLoginOpen(false)}
+        hasCloseButton
+      >
+        <Dialog.Header caption="Авторизация" />
+        <Dialog.Body className="pt-2">
+          <form className="flex flex-col gap-5" onSubmit={handleLoginSubmit}>
+            <TextInput
+              name="email"
+              type="text"
+              placeholder="john@example.com"
+              value={loginValues.email}
+              onChange={handleLoginChange}
+              controlProps={{ required: true, autoComplete: 'email' }}
+            />
+            <PasswordInput
+              name="password"
+              placeholder="Enter your password"
+              value={loginValues.password}
+              onChange={handleLoginChange}
+              controlProps={{
+                required: true,
+                autoComplete: 'current-password',
+              }}
+            />
+            {loginError ? (
+              <p
+                className="text-sm text-[var(--g-color-text-danger)]"
+                role="alert"
+              >
+                {loginError}
+              </p>
+            ) : null}
+            <div className="flex justify-end gap-3 pt-2">
+              <Button
+                view="outlined"
+                type="button"
+                onClick={() => setLoginOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                view="action"
+                type="submit"
+                loading={loginPending}
+                disabled={loginPending}
+              >
+                Login
+              </Button>
+            </div>
+          </form>
+        </Dialog.Body>
+      </Dialog>
 
-      <Modal state={registerState}>
-        <ModalHiddenTrigger label="Регистрация" />
-        <Modal.Backdrop>
-          <Modal.Container placement="center" size="sm" scroll="inside">
-            <Modal.Dialog className="bg-gray-100">
-              <Modal.Header className="flex flex-row items-center justify-between border-b border-white/10 pb-4">
-                <Modal.Heading className="text-xl font-semibold text-gray-800">
-                  Регистрация
-                </Modal.Heading>
-                <Modal.CloseTrigger aria-label="Закрыть" />
-              </Modal.Header>
-              <Modal.Body className="pt-2">
-                <Form
-                  className="flex flex-col gap-6 px-2"
-                  onSubmit={async (e) => {
-                    e.preventDefault();
-                    setRegError(null);
-                    setRegPending(true);
-                    try {
-                      const created = await registerUser({
-                        name: regName,
-                        email: regEmail,
-                        password: regPassword,
-                      });
-                      if (!created.ok) {
-                        if (created.error === 'exists') {
-                          setRegError('Пользователь с таким email уже есть');
-                        } else {
-                          setRegError('Не удалось зарегистрироваться');
-                        }
-                        return;
-                      }
-                      const res = await signIn('credentials', {
-                        email: regEmail,
-                        password: regPassword,
-                        redirect: false,
-                      });
-                      if (res?.error) {
-                        setRegError('Аккаунт создан, но вход не удался');
-                        return;
-                      }
-                      registerState.close();
-                      setRegName('');
-                      setRegEmail('');
-                      setRegPassword('');
-                    } finally {
-                      setRegPending(false);
-                    }
-                  }}
-                >
-                  <TextField name="name" type="text" isRequired>
-                    <Label className="text-gray-800">Name</Label>
-                    <Input
-                      placeholder="John Doe"
-                      value={regName}
-                      onChange={(ev) => setRegName(ev.target.value)}
-                    />
-                  </TextField>
-                  <TextField name="email" type="email" isRequired>
-                    <Label className="text-gray-800">Email</Label>
-                    <Input
-                      placeholder="john@example.com"
-                      value={regEmail}
-                      onChange={(ev) => setRegEmail(ev.target.value)}
-                    />
-                  </TextField>
-                  <TextField name="password" type="password" isRequired>
-                    <Label className="text-gray-800">Password</Label>
-                    <Input
-                      placeholder="Enter your password"
-                      value={regPassword}
-                      onChange={(ev) => setRegPassword(ev.target.value)}
-                    />
-                  </TextField>
-                  {regError ? (
-                    <p className="text-sm text-red-600" role="alert">
-                      {regError}
-                    </p>
-                  ) : null}
-                  <div className="flex justify-end gap-3 pt-2">
-                    <Button
-                      type="button"
-                      variant="secondary"
-                      className="text-gray-800"
-                      onPress={() => registerState.close()}
-                    >
-                      Cancel
-                    </Button>
-                    <Button type="submit" isDisabled={regPending}>
-                      {regPending ? '…' : 'Register'}
-                    </Button>
-                  </div>
-                </Form>
-              </Modal.Body>
-            </Modal.Dialog>
-          </Modal.Container>
-        </Modal.Backdrop>
-      </Modal>
+      <Dialog
+        open={registerOpen}
+        size="s"
+        onClose={() => setRegisterOpen(false)}
+        hasCloseButton
+      >
+        <Dialog.Header caption="Регистрация" />
+        <Dialog.Body className="pt-2">
+          <form className="flex flex-col gap-5" onSubmit={handleRegisterSubmit}>
+            <TextInput
+              name="name"
+              type="text"
+              placeholder="John Doe"
+              value={registerValues.name}
+              onChange={handleRegisterChange}
+              controlProps={{ required: true, autoComplete: 'name' }}
+            />
+            <TextInput
+              name="email"
+              type="email"
+              placeholder="john@example.com"
+              value={registerValues.email}
+              onChange={handleRegisterChange}
+              controlProps={{ required: true, autoComplete: 'email' }}
+            />
+            <PasswordInput
+              name="password"
+              placeholder="Enter your password"
+              value={registerValues.password}
+              onChange={handleRegisterChange}
+              controlProps={{ required: true, autoComplete: 'new-password' }}
+            />
+            {regError ? (
+              <p
+                className="text-sm text-[var(--g-color-text-danger)]"
+                role="alert"
+              >
+                {regError}
+              </p>
+            ) : null}
+            <div className="flex justify-end gap-3 pt-2">
+              <Button
+                view="outlined"
+                type="button"
+                onClick={() => setRegisterOpen(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                view="action"
+                type="submit"
+                loading={regPending}
+                disabled={regPending}
+              >
+                Register
+              </Button>
+            </div>
+          </form>
+        </Dialog.Body>
+      </Dialog>
     </AuthModalsContext.Provider>
   );
 }

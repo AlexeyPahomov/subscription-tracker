@@ -1,8 +1,8 @@
-'use client';
-import { useAuthModals } from '@/components/auth/auth-modals-provider';
+'use client';import { useAuthModals } from '@/components/auth/auth-modals-provider';
 import { appConfig } from '@/config/app.config';
 import { layoutConfig } from '@/config/layout.config';
-import { Button, Link } from '@heroui/react';
+import { Person } from '@gravity-ui/icons';
+import { Button, Icon } from '@gravity-ui/uikit';
 import NextLink from 'next/link';
 import { signOut, useSession } from 'next-auth/react';
 
@@ -23,13 +23,13 @@ export default function Header() {
         {/* Навигация */}
         <nav className="hidden md:flex items-center gap-6">
           {appConfig.navigation.map(({ title, href }) => (
-            <Link
+            <NextLink
               href={href}
               key={href}
-              className="text-gray-300 hover:text-white transition-colors"
+              className="text-gray-300 text-[18px] transition-colors hover:text-white"
             >
               {title}
-            </Link>
+            </NextLink>
           ))}
         </nav>
 
@@ -37,27 +37,28 @@ export default function Header() {
         <div className="hidden md:flex items-center gap-3">
           {status === 'authenticated' ? (
             <>
-              <span className="max-w-[200px] truncate text-sm text-gray-300">
-                {session.user?.name ?? session.user?.email}
+              <span className="flex max-w-[200px] items-center gap-1 truncate text-sm text-gray-300">
+                <Icon
+                  data={Person}
+                  size={16}
+                  className="shrink-0 text-gray-400"
+                />
+                <span className="truncate">
+                  {session.user?.name ?? session.user?.email}
+                </span>
               </span>
-              <Button
-                variant="secondary"
-                className="text-gray-800"
-                onPress={() => signOut()}
-              >
+              <Button view="outlined" onClick={() => signOut()}>
                 Logout
               </Button>
             </>
           ) : (
             <>
-              <Button
-                variant="secondary"
-                className="text-gray-800"
-                onPress={openLogin}
-              >
+              <Button view="outlined" onClick={openLogin}>
                 Login
               </Button>
-              <Button onPress={openRegister}>Sign Up</Button>
+              <Button view="action" onClick={openRegister}>
+                Sign Up
+              </Button>
             </>
           )}
         </div>
