@@ -1,13 +1,14 @@
 'use client';
-
 import { useAuthModals } from '@/components/auth/auth-modals-provider';
 import { appConfig } from '@/config/app.config';
 import { layoutConfig } from '@/config/layout.config';
 import { Button, Link } from '@heroui/react';
 import NextLink from 'next/link';
+import { signOut, useSession } from 'next-auth/react';
 
 export default function Header() {
   const { openLogin, openRegister } = useAuthModals();
+  const { data: session, status } = useSession();
 
   return (
     <header
@@ -32,12 +33,33 @@ export default function Header() {
           ))}
         </nav>
 
-        {/* Вход/регистрация */}
-        <div className="hidden md:flex items-center gap-2">
-          <Button variant="secondary" className="text-gray-800" onPress={openLogin}>
-            Login
-          </Button>
-          <Button onPress={openRegister}>Sign Up</Button>
+        {/* Вход / профиль */}
+        <div className="hidden md:flex items-center gap-3">
+          {status === 'authenticated' ? (
+            <>
+              <span className="max-w-[200px] truncate text-sm text-gray-300">
+                {session.user?.name ?? session.user?.email}
+              </span>
+              <Button
+                variant="secondary"
+                className="text-gray-800"
+                onPress={() => signOut()}
+              >
+                Logout
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button
+                variant="secondary"
+                className="text-gray-800"
+                onPress={openLogin}
+              >
+                Login
+              </Button>
+              <Button onPress={openRegister}>Sign Up</Button>
+            </>
+          )}
         </div>
       </div>
     </header>

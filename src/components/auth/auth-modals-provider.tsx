@@ -1,5 +1,6 @@
 'use client';
 
+import { registerUser } from '@/actions/registerUser';
 import {
   Button,
   Form,
@@ -9,7 +10,14 @@ import {
   TextField,
   useOverlayState,
 } from '@heroui/react';
-import { createContext, useContext, useMemo, type ReactNode } from 'react';
+import { signIn } from 'next-auth/react';
+import {
+  createContext,
+  useContext,
+  useMemo,
+  useState,
+  type ReactNode,
+} from 'react';
 
 type AuthModalsContextValue = {
   openLogin: () => void;
@@ -35,6 +43,17 @@ function ModalHiddenTrigger({ label }: { label: string }) {
 export function AuthModalsProvider({ children }: { children: ReactNode }) {
   const loginState = useOverlayState({ defaultOpen: false });
   const registerState = useOverlayState({ defaultOpen: false });
+
+  const [loginEmail, setLoginEmail] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
+  const [loginError, setLoginError] = useState<string | null>(null);
+  const [loginPending, setLoginPending] = useState(false);
+
+  const [regName, setRegName] = useState('');
+  const [regEmail, setRegEmail] = useState('');
+  const [regPassword, setRegPassword] = useState('');
+  const [regError, setRegError] = useState<string | null>(null);
+  const [regPending, setRegPending] = useState(false);
 
   const value = useMemo(
     () => ({
@@ -68,18 +87,49 @@ export function AuthModalsProvider({ children }: { children: ReactNode }) {
               <Modal.Body className="pt-2">
                 <Form
                   className="flex flex-col gap-6 px-2"
-                  onSubmit={(e) => {
+                  onSubmit={async (e) => {
                     e.preventDefault();
+                    setLoginError(null);
+                    setLoginPending(true);
+                    try {
+                      const res = await signIn('credentials', {
+                        email: loginEmail,
+                        password: loginPassword,
+                        redirect: false,
+                      });
+                      if (res?.error) {
+                        setLoginError('Неверный email или пароль');
+                        return;
+                      }
+                      loginState.close();
+                      setLoginEmail('');
+                      setLoginPassword('');
+                    } finally {
+                      setLoginPending(false);
+                    }
                   }}
                 >
                   <TextField name="email" type="text" isRequired>
                     <Label className="text-gray-800">Email</Label>
-                    <Input placeholder="john@example.com" />
+                    <Input
+                      placeholder="john@example.com"
+                      value={loginEmail}
+                      onChange={(ev) => setLoginEmail(ev.target.value)}
+                    />
                   </TextField>
                   <TextField name="password" type="password" isRequired>
                     <Label className="text-gray-800">Password</Label>
-                    <Input placeholder="Enter your password" />
+                    <Input
+                      placeholder="Enter your password"
+                      value={loginPassword}
+                      onChange={(ev) => setLoginPassword(ev.target.value)}
+                    />
                   </TextField>
+                  {loginError ? (
+                    <p className="text-sm text-red-600" role="alert">
+                      {loginError}
+                    </p>
+                  ) : null}
                   <div className="flex justify-end gap-3 pt-2">
                     <Button
                       type="button"
@@ -89,7 +139,9 @@ export function AuthModalsProvider({ children }: { children: ReactNode }) {
                     >
                       Cancel
                     </Button>
-                    <Button type="submit">Login</Button>
+                    <Button type="submit" isDisabled={loginPending}>
+                      {loginPending ? '…' : 'Login'}
+                    </Button>
                   </div>
                 </Form>
               </Modal.Body>
@@ -112,22 +164,71 @@ export function AuthModalsProvider({ children }: { children: ReactNode }) {
               <Modal.Body className="pt-2">
                 <Form
                   className="flex flex-col gap-6 px-2"
-                  onSubmit={(e) => {
+                  onSubmit={async (e) => {
                     e.preventDefault();
+                    setRegError(null);
+                    setRegPending(true);
+                    try {
+                      const created = await registerUser({
+                        name: regName,
+                        email: regEmail,
+                        password: regPassword,
+                      });
+                      if (!created.ok) {
+                        if (created.error === 'exists') {
+                          setRegError('Пользователь с таким email уже есть');
+                        } else {
+                          setRegError('Не удалось зарегистрироваться');
+                        }
+                        return;
+                      }
+                      const res = await signIn('credentials', {
+                        email: regEmail,
+                        password: regPassword,
+                        redirect: false,
+                      });
+                      if (res?.error) {
+                        setRegError('Аккаунт создан, но вход не удался');
+                        return;
+                      }
+                      registerState.close();
+                      setRegName('');
+                      setRegEmail('');
+                      setRegPassword('');
+                    } finally {
+                      setRegPending(false);
+                    }
                   }}
                 >
                   <TextField name="name" type="text" isRequired>
                     <Label className="text-gray-800">Name</Label>
-                    <Input placeholder="John Doe" />
+                    <Input
+                      placeholder="John Doe"
+                      value={regName}
+                      onChange={(ev) => setRegName(ev.target.value)}
+                    />
                   </TextField>
                   <TextField name="email" type="email" isRequired>
                     <Label className="text-gray-800">Email</Label>
-                    <Input placeholder="john@example.com" />
+                    <Input
+                      placeholder="john@example.com"
+                      value={regEmail}
+                      onChange={(ev) => setRegEmail(ev.target.value)}
+                    />
                   </TextField>
                   <TextField name="password" type="password" isRequired>
                     <Label className="text-gray-800">Password</Label>
-                    <Input placeholder="Enter your password" />
+                    <Input
+                      placeholder="Enter your password"
+                      value={regPassword}
+                      onChange={(ev) => setRegPassword(ev.target.value)}
+                    />
                   </TextField>
+                  {regError ? (
+                    <p className="text-sm text-red-600" role="alert">
+                      {regError}
+                    </p>
+                  ) : null}
                   <div className="flex justify-end gap-3 pt-2">
                     <Button
                       type="button"
@@ -137,7 +238,9 @@ export function AuthModalsProvider({ children }: { children: ReactNode }) {
                     >
                       Cancel
                     </Button>
-                    <Button type="submit">Register</Button>
+                    <Button type="submit" isDisabled={regPending}>
+                      {regPending ? '…' : 'Register'}
+                    </Button>
                   </div>
                 </Form>
               </Modal.Body>
