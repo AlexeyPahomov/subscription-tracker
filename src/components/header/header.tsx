@@ -1,13 +1,13 @@
 'use client';
 
-import { useLoginModal } from '@/components/auth/login-modal-provider';
+import { useAuthModals } from '@/components/auth/auth-modals-provider';
 import { appConfig } from '@/config/app.config';
 import { layoutConfig } from '@/config/layout.config';
 import { Button, Link } from '@heroui/react';
 import NextLink from 'next/link';
 
 export default function Header() {
-  const { openLogin } = useLoginModal();
+  const { openLogin, openRegister } = useAuthModals();
 
   return (
     <header
@@ -37,9 +37,7 @@ export default function Header() {
           <Button variant="secondary" className="text-gray-800" onPress={openLogin}>
             Login
           </Button>
-          <NextLink href="/register">
-            <Button>Sign Up</Button>
-          </NextLink>
+          <Button onPress={openRegister}>Sign Up</Button>
         </div>
       </div>
     </header>
