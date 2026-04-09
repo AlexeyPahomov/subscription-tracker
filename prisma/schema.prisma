@@ -8,8 +8,22 @@ datasource db {
 }
 
 model User {
-  id       Int     @id @default(autoincrement())
-  email    String  @unique
-  name     String?
-  password String
+  id            String         @id @default(cuid())
+  email         String         @unique
+  name          String?
+  password      String
+  subscriptions Subscription[]
+  createdAt     DateTime       @default(now())
+}
+
+model Subscription {
+  id          String   @id @default(cuid())
+  name        String
+  price       Float
+  currency    String // "USD", "EUR", "TRY"
+  interval    String // "monthly", "yearly"
+  nextBilling DateTime
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  createdAt   DateTime @default(now())
 }

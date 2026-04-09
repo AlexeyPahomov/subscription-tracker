@@ -1,7 +1,9 @@
 'use server';
 
 import { hash } from 'bcryptjs';
+import { randomUUID } from 'crypto';
 import { prisma } from '@/utils/prisma';
+import { Prisma } from '@/generated/prisma/client';
 
 export type RegisterResult =
   | { ok: true }
@@ -13,8 +15,11 @@ export async function registerUser(input: {
   password: string;
 }): Promise<RegisterResult> {
   try {
+    const email = input.email.trim().toLowerCase();
+    const name = input.name.trim();
+
     const existing = await prisma.user.findUnique({
-      where: { email: input.email },
+      where: { email },
     });
     if (existing) {
       return { ok: false, error: 'exists' };
@@ -22,13 +27,22 @@ export async function registerUser(input: {
     const passwordHash = await hash(input.password, 12);
     await prisma.user.create({
       data: {
-        name: input.name,
-        email: input.email,
+        id: randomUUID(),
+        name,
+        email,
         password: passwordHash,
       },
     });
     return { ok: true };
-  } catch {
+  } catch (error) {
+    console.error('registerUser failed', error);
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === 'P2002'
+    ) {
+      return { ok: false, error: 'exists' };
+    }
+
     return { ok: false, error: 'unknown' };
   }
 }
