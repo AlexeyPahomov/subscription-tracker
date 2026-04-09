@@ -1,10 +1,12 @@
-'use client';import { useAuthModals } from '@/components/auth/auth-modals-provider';
+'use client';
+
+import { useAuthModals } from '@/components/auth/auth-modals-provider';
+import { ProfileMenu } from '@/components/header/profile-menu';
 import { appConfig } from '@/config/app.config';
 import { layoutConfig } from '@/config/layout.config';
-import { Person } from '@gravity-ui/icons';
-import { Button, Icon } from '@gravity-ui/uikit';
+import { Button } from '@gravity-ui/uikit';
 import NextLink from 'next/link';
-import { signOut, useSession } from 'next-auth/react';
+import { useSession } from 'next-auth/react';
 
 export default function Header() {
   const { openLogin, openRegister } = useAuthModals();
@@ -36,24 +38,10 @@ export default function Header() {
         {/* Вход / профиль */}
         <div className="hidden md:flex items-center gap-3">
           {status === 'authenticated' ? (
-            <>
-              <NextLink
-                href="/profile"
-                className="flex max-w-[200px] items-center gap-1 truncate text-sm text-gray-300 transition-colors hover:text-white"
-              >
-                <Icon
-                  data={Person}
-                  size={16}
-                  className="shrink-0 text-gray-400"
-                />
-                <span className="truncate">
-                  {session.user?.name ?? session.user?.email}
-                </span>
-              </NextLink>
-              <Button view="outlined" onClick={() => signOut()}>
-                Sign out
-              </Button>
-            </>
+            <ProfileMenu
+              name={session.user?.name ?? session.user?.email ?? ''}
+              email={session.user?.email ?? ''}
+            />
           ) : (
             <>
               <Button view="outlined" onClick={openLogin}>
