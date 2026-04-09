@@ -12,6 +12,7 @@ import Header from '@/components/header/header';
 import { gravitySystemThemeInlineScript } from '@/config/gravity-system-theme-script';
 import { layoutConfig } from '@/config/layout.config';
 import { appConfig } from '@/config/app.config';
+import { auth } from '@/auth';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -33,6 +34,7 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const session = await auth();
   const headerList = await headers();
   const clientHintTheme = headerList.get('sec-ch-prefers-color-scheme');
   const ssrTheme =
@@ -58,7 +60,7 @@ export default async function RootLayout({
           dangerouslySetInnerHTML={{ __html: gravitySystemThemeInlineScript }}
         />
         <GravityThemeProvider>
-          <AuthSessionProvider>
+          <AuthSessionProvider session={session}>
             <AuthModalsProvider>
               <Header />
               <main className="h-full flex flex-col">{children}</main>

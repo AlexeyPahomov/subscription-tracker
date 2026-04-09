@@ -37,7 +37,9 @@ export default function Header() {
 
         {/* Вход / профиль */}
         <div className="hidden md:flex items-center gap-3">
-          {status === 'authenticated' ? (
+          {status === 'loading' ? (
+            <div className="h-9 w-32" aria-hidden="true" />
+          ) : status === 'authenticated' ? (
             <ProfileMenu
               name={session.user?.name ?? session.user?.email ?? ''}
               email={session.user?.email ?? ''}
