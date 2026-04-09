@@ -5,7 +5,7 @@ import { prisma } from '@/utils/prisma';
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   trustHost: true,
-  session: { strategy: 'jwt', maxAge: 30 * 24 * 60 * 60 },
+  session: { strategy: 'jwt', maxAge: 3600 },
   providers: [
     Credentials({
       credentials: {
