@@ -2,6 +2,7 @@
 
 import { registerUser } from '@/actions/registerUser';
 import { useForm } from '@/hooks/useForm';
+import { useModal } from '@/hooks/useModal';
 import { Button, Dialog, PasswordInput, TextInput } from '@gravity-ui/uikit';
 import { useRouter } from 'next/navigation';
 import { signIn } from 'next-auth/react';
@@ -25,8 +26,8 @@ const AuthModalsContext = createContext<AuthModalsContextValue | null>(null);
 
 export function AuthModalsProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
-  const [loginOpen, setLoginOpen] = useState(false);
-  const [registerOpen, setRegisterOpen] = useState(false);
+  const loginModal = useModal();
+  const registerModal = useModal();
 
   const {
     values: loginValues,
@@ -48,12 +49,17 @@ export function AuthModalsProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo(
     () => ({
-      openLogin: () => setLoginOpen(true),
-      closeLogin: () => setLoginOpen(false),
-      openRegister: () => setRegisterOpen(true),
-      closeRegister: () => setRegisterOpen(false),
+      openLogin: loginModal.open,
+      closeLogin: loginModal.close,
+      openRegister: registerModal.open,
+      closeRegister: registerModal.close,
     }),
-    [],
+    [
+      loginModal.open,
+      loginModal.close,
+      registerModal.open,
+      registerModal.close,
+    ],
   );
 
   async function handleLoginSubmit(e: SubmitEvent<HTMLFormElement>) {
@@ -70,7 +76,7 @@ export function AuthModalsProvider({ children }: { children: ReactNode }) {
         setLoginError('Неверный email или пароль');
         return;
       }
-      setLoginOpen(false);
+      loginModal.close();
       setLoginValues({ email: '', password: '' });
       router.push('/dashboard');
     } finally {
@@ -105,7 +111,7 @@ export function AuthModalsProvider({ children }: { children: ReactNode }) {
         setRegError('Аккаунт создан, но вход не удался');
         return;
       }
-      setRegisterOpen(false);
+      registerModal.close();
       setRegisterValues({ name: '', email: '', password: '' });
       router.push('/dashboard');
     } finally {
@@ -117,9 +123,9 @@ export function AuthModalsProvider({ children }: { children: ReactNode }) {
     <AuthModalsContext.Provider value={value}>
       {children}
       <Dialog
-        open={loginOpen}
+        open={loginModal.isOpen}
         size="s"
-        onClose={() => setLoginOpen(false)}
+        onClose={loginModal.close}
         hasCloseButton
       >
         <Dialog.Header caption="Авторизация" />
@@ -155,7 +161,7 @@ export function AuthModalsProvider({ children }: { children: ReactNode }) {
               <Button
                 view="outlined"
                 type="button"
-                onClick={() => setLoginOpen(false)}
+                onClick={loginModal.close}
               >
                 Cancel
               </Button>
@@ -173,9 +179,9 @@ export function AuthModalsProvider({ children }: { children: ReactNode }) {
       </Dialog>
 
       <Dialog
-        open={registerOpen}
+        open={registerModal.isOpen}
         size="s"
-        onClose={() => setRegisterOpen(false)}
+        onClose={registerModal.close}
         hasCloseButton
       >
         <Dialog.Header caption="Регистрация" />
@@ -216,7 +222,7 @@ export function AuthModalsProvider({ children }: { children: ReactNode }) {
               <Button
                 view="outlined"
                 type="button"
-                onClick={() => setRegisterOpen(false)}
+                onClick={registerModal.close}
               >
                 Cancel
               </Button>

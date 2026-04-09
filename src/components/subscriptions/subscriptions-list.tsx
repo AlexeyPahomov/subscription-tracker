@@ -13,6 +13,7 @@ import {
   type SubscriptionFormValues,
 } from '@/components/subscriptions/subscription-form';
 import { SubscriptionCard } from '@/components/subscriptions/subscription-card';
+import { useModal } from '@/hooks/useModal';
 
 type Subscription = {
   id: string;
@@ -23,8 +24,9 @@ type Subscription = {
 };
 
 export function SubscriptionsList() {
+  const { isOpen, open, close } = useModal();
+
   const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [values, setValues] = useState<SubscriptionFormValues>(
     initialSubscriptionFormValues,
   );
@@ -35,14 +37,6 @@ export function SubscriptionsList() {
     if (!values.nextPaymentDate) return '';
     return values.nextPaymentDate.format('DD.MM.YYYY');
   }, [values.nextPaymentDate]);
-
-  function openModal() {
-    setIsModalOpen(true);
-  }
-
-  function closeModal() {
-    setIsModalOpen(false);
-  }
 
   function handleChange(event: ChangeEvent<HTMLInputElement>) {
     const { name, value } = event.target;
@@ -71,7 +65,7 @@ export function SubscriptionsList() {
 
     setSubscriptions((prev) => [...prev, nextItem]);
     setValues(initialSubscriptionFormValues);
-    closeModal();
+    close();
   }
 
   function handleNextPaymentDateUpdate(value: DateTime | null) {
@@ -82,7 +76,7 @@ export function SubscriptionsList() {
     <section className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-4 py-10">
       <div className="mb-6 flex items-center justify-between gap-4">
         {!isEmpty ? (
-          <Button view="action" onClick={openModal}>
+          <Button view="action" onClick={open}>
             <Icon data={SquarePlus} size={18} />
             Add subscription
           </Button>
@@ -92,7 +86,7 @@ export function SubscriptionsList() {
       {isEmpty ? (
         <div className="flex flex-1 flex-col items-center justify-center gap-5 rounded-xl border border-dashed border-gray-700 px-4 py-14 text-center">
           <p className="text-lg text-gray-300">You have no subscriptions yet</p>
-          <Button view="action" size="l" onClick={openModal}>
+          <Button view="action" size="l" onClick={open}>
             Add your first subscription
           </Button>
         </div>
@@ -110,13 +104,13 @@ export function SubscriptionsList() {
         </div>
       )}
 
-      <Dialog open={isModalOpen} size="m" onClose={closeModal} hasCloseButton>
+      <Dialog open={isOpen} size="m" onClose={close} hasCloseButton>
         <Dialog.Header caption="Add subscription" />
         <Dialog.Body className="pt-2">
           <SubscriptionForm
             values={values}
             onSubmit={handleSubmit}
-            onCancel={closeModal}
+            onCancel={close}
             onChange={handleChange}
             onIntervalUpdate={handleIntervalUpdate}
             onNextPaymentDateUpdate={handleNextPaymentDateUpdate}
