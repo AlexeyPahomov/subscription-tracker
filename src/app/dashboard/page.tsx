@@ -1,5 +1,5 @@
 import { auth } from '@/auth';
-import { SubscriptionsList } from '@/components/subscriptions/subscriptions-list';
+import { Subscriptions } from '@/components/subscriptions/subscriptions';
 import { redirect } from 'next/navigation';
 
 export default async function DashboardPage() {
@@ -9,5 +9,5 @@ export default async function DashboardPage() {
     redirect('/');
   }
 
-  return <SubscriptionsList />;
+  return <Subscriptions />;
 }
