@@ -8,8 +8,13 @@ import {
   SubscriptionsEmpty,
   SubscriptionsList,
 } from '@/components/subscriptions/ui';
+import type { Subscription } from '@/types/subscription';
 
-export function Subscriptions() {
+type SubscriptionsProps = {
+  initialSubscriptions: Subscription[];
+};
+
+export function Subscriptions({ initialSubscriptions }: SubscriptionsProps) {
   const {
     subscriptions,
     isEmpty,
@@ -18,7 +23,7 @@ export function Subscriptions() {
     requestDelete,
     formDialog,
     deleteDialog,
-  } = useSubscriptions();
+  } = useSubscriptions(initialSubscriptions);
 
   return (
     <section className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-4 py-10">

@@ -1,6 +1,6 @@
 'use client';
 
-import { CircleDollar, PencilToSquare, TrashBin } from '@gravity-ui/icons';
+import { PencilToSquare, TrashBin } from '@gravity-ui/icons';
 import type { SubscriptionCardDetailRow, SubscriptionCardProps } from './types';
 import { CardDetail, CardIconAction } from './ui';
 
@@ -13,7 +13,7 @@ export function SubscriptionCard({
   onDelete,
 }: SubscriptionCardProps) {
   const detailRows: SubscriptionCardDetailRow[] = [
-    { key: 'price', label: 'Price', value: price, icon: CircleDollar },
+    { key: 'price', label: 'Price', value: price },
     { key: 'interval', label: 'Interval', value: interval },
     {
       key: 'nextPayment',
@@ -40,13 +40,8 @@ export function SubscriptionCard({
         </div>
       </div>
       <dl className="mt-4 grid grid-cols-1 gap-3 text-sm text-gray-300 sm:grid-cols-3">
-        {detailRows.map(({ key, label, value, icon }) => (
-          <CardDetail
-            key={key}
-            label={label}
-            value={value}
-            icon={icon}
-          />
+        {detailRows.map(({ key, label, value }) => (
+          <CardDetail key={key} label={label} value={value} />
         ))}
       </dl>
     </article>

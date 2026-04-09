@@ -4,22 +4,22 @@ import { auth } from '@/auth';
 import { prisma } from '@/utils/prisma';
 import { hash } from 'bcryptjs';
 
-export type UpdateProfileInput = {
+type UpdateUserInput = {
   name: string;
   password: string;
 };
 
-export type UpdateProfileResult =
+type UpdateUserResult =
   | { ok: true; name: string }
   | { ok: false; error: 'unauthorized' | 'validation' | 'unknown' };
 
-export async function updateProfile(
-  input: UpdateProfileInput,
-): Promise<UpdateProfileResult> {
+export async function updateUser(
+  input: UpdateUserInput,
+): Promise<UpdateUserResult> {
   const session = await auth();
-  const userId = Number(session?.user?.id);
+  const userId = session?.user?.id;
 
-  if (!session?.user?.id || Number.isNaN(userId)) {
+  if (!userId) {
     return { ok: false, error: 'unauthorized' };
   }
 

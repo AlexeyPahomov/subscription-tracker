@@ -1,6 +1,6 @@
 'use client';
 
-import { registerUser } from '@/actions/registerUser';
+import { createUser } from '@/actions/createUser';
 import { useForm } from '@/hooks/useForm';
 import { useModal } from '@/hooks/useModal';
 import { Button, Dialog, PasswordInput, TextInput } from '@gravity-ui/uikit';
@@ -89,7 +89,7 @@ export function AuthModalsProvider({ children }: { children: ReactNode }) {
     setRegError(null);
     setRegPending(true);
     try {
-      const created = await registerUser({
+      const created = await createUser({
         name: registerValues.name,
         email: registerValues.email,
         password: registerValues.password,
@@ -150,19 +150,12 @@ export function AuthModalsProvider({ children }: { children: ReactNode }) {
               }}
             />
             {loginError ? (
-              <p
-                className="text-sm text-[var(--g-color-text-danger)]"
-                role="alert"
-              >
+              <p className="text-sm text-(--g-color-text-danger)" role="alert">
                 {loginError}
               </p>
             ) : null}
             <div className="flex justify-end gap-3 pt-2">
-              <Button
-                view="outlined"
-                type="button"
-                onClick={loginModal.close}
-              >
+              <Button view="outlined" type="button" onClick={loginModal.close}>
                 Cancel
               </Button>
               <Button
@@ -211,10 +204,7 @@ export function AuthModalsProvider({ children }: { children: ReactNode }) {
               controlProps={{ required: true, autoComplete: 'new-password' }}
             />
             {regError ? (
-              <p
-                className="text-sm text-[var(--g-color-text-danger)]"
-                role="alert"
-              >
+              <p className="text-sm text-(--g-color-text-danger)" role="alert">
                 {regError}
               </p>
             ) : null}

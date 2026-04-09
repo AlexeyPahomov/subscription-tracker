@@ -1,6 +1,5 @@
 import type { DateTime } from '@gravity-ui/date-utils';
-
-export type IntervalValue = 'monthly' | 'yearly' | 'weekly' | 'quarterly';
+import type { IntervalValue } from '@/types/subscription';
 
 export type IntervalOption = {
   value: IntervalValue;
@@ -10,6 +9,6 @@ export type IntervalOption = {
 export type SubscriptionFormValues = {
   name: string;
   price: string;
-  interval: IntervalValue | null;
+  interval: IntervalValue;
   nextPaymentDate: DateTime | null;
 };

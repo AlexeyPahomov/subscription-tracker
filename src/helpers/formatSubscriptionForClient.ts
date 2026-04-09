@@ -1,0 +1,47 @@
+import type { Subscription as DbSubscription } from '@/generated/prisma/client';
+import type { IntervalValue } from '@/types/subscription';
+import type { Subscription } from '@/types/subscription';
+import { defaultSubscriptionCurrency } from '@/constants';
+import { isIntervalValue } from '@/helpers/isIntervalValue';
+
+function normalizeInterval(value: string): IntervalValue {
+  return isIntervalValue(value) ? value : 'monthly';
+}
+
+function formatDisplayDate(date: Date): string {
+  const dd = String(date.getDate()).padStart(2, '0');
+  const mm = String(date.getMonth() + 1).padStart(2, '0');
+  const yyyy = date.getFullYear();
+  return `${dd}.${mm}.${yyyy}`;
+}
+
+function formatCurrencyLeadingSymbol(price: number, currencyCode: string): string {
+  const formatter = new Intl.NumberFormat(undefined, {
+    style: 'currency',
+    currency: currencyCode,
+  });
+  const parts = formatter.formatToParts(price);
+  const currencyParts = parts.filter((p) => p.type === 'currency');
+  const numberParts = parts.filter((p) => p.type !== 'currency');
+  return [...currencyParts, ...numberParts].map((p) => p.value).join('');
+}
+
+function formatPriceDisplay(price: number, currency: string): string {
+  const code =
+    currency.length === 3 ? currency : defaultSubscriptionCurrency;
+  try {
+    return formatCurrencyLeadingSymbol(price, code);
+  } catch {
+    return `${code} ${price}`;
+  }
+}
+
+export function formatSubscriptionForClient(row: DbSubscription): Subscription {
+  return {
+    id: row.id,
+    name: row.name,
+    price: formatPriceDisplay(row.price, row.currency),
+    interval: normalizeInterval(row.interval),
+    nextPaymentDate: formatDisplayDate(new Date(row.nextBilling)),
+  };
+}

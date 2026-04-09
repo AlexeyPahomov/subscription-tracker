@@ -1,5 +1,6 @@
 import type { SelectOption } from '@gravity-ui/uikit';
-import type { IntervalValue, IntervalOption, SubscriptionFormValues } from './types';
+import type { IntervalValue } from '@/types/subscription';
+import type { IntervalOption, SubscriptionFormValues } from './types';
 
 export const subscriptionIntervals: IntervalOption[] = [
   { value: 'monthly', label: 'Monthly' },
@@ -13,7 +14,7 @@ export const displayDateFormat = 'DD.MM.YYYY' as const;
 export const initialSubscriptionFormValues: SubscriptionFormValues = {
   name: '',
   price: '',
-  interval: null,
+  interval: subscriptionIntervals[0]!.value,
   nextPaymentDate: null,
 };
 

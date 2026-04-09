@@ -6,7 +6,9 @@ type SubscriptionDeleteConfirmDialogProps = {
   open: boolean;
   subscriptionName: string;
   onCancel: () => void;
-  onConfirm: () => void;
+  onConfirm: () => void | Promise<void>;
+  isDeleting?: boolean;
+  errorMessage?: string | null;
 };
 
 export function SubscriptionDeleteConfirmDialog({
@@ -14,6 +16,8 @@ export function SubscriptionDeleteConfirmDialog({
   subscriptionName,
   onCancel,
   onConfirm,
+  isDeleting = false,
+  errorMessage,
 }: SubscriptionDeleteConfirmDialogProps) {
   return (
     <Dialog open={open} size="s" onClose={onCancel} hasCloseButton>
@@ -24,11 +28,27 @@ export function SubscriptionDeleteConfirmDialog({
           <br />
           This action cannot be undone.
         </p>
+        {errorMessage ? (
+          <p className="text-sm text-red-400" role="alert">
+            {errorMessage}
+          </p>
+        ) : null}
         <div className="flex justify-end gap-3 pt-1">
-          <Button view="outlined" type="button" onClick={onCancel}>
+          <Button
+            view="outlined"
+            type="button"
+            onClick={onCancel}
+            disabled={isDeleting}
+          >
             Cancel
           </Button>
-          <Button view="outlined-danger" type="button" onClick={onConfirm}>
+          <Button
+            view="outlined-danger"
+            type="button"
+            loading={isDeleting}
+            disabled={isDeleting}
+            onClick={onConfirm}
+          >
             Delete
           </Button>
         </div>

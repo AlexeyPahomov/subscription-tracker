@@ -17,10 +17,12 @@ type SubscriptionFormProps = {
   title: string;
   onClose: () => void;
   values: SubscriptionFormValues;
-  onSubmit: (event: SubmitEvent<HTMLFormElement>) => void;
+  onSubmit: (event: SubmitEvent<HTMLFormElement>) => void | Promise<void>;
   onChange: (event: ChangeEvent<HTMLInputElement>) => void;
   onIntervalUpdate: (newValue: string[]) => void;
   onNextPaymentDateUpdate: (value: DateTime | null) => void;
+  errorMessage?: string | null;
+  isSubmitting?: boolean;
 };
 
 export function SubscriptionForm({
@@ -32,6 +34,8 @@ export function SubscriptionForm({
   onChange,
   onIntervalUpdate,
   onNextPaymentDateUpdate,
+  errorMessage,
+  isSubmitting = false,
 }: SubscriptionFormProps) {
   return (
     <Dialog open={open} size="m" onClose={onClose} hasCloseButton>
@@ -57,7 +61,7 @@ export function SubscriptionForm({
           <Select
             placeholder="Select interval"
             options={intervalSelectOptions}
-            value={values.interval ? [values.interval] : []}
+            value={[values.interval]}
             onUpdate={onIntervalUpdate}
           />
           <DatePicker
@@ -66,14 +70,26 @@ export function SubscriptionForm({
             onUpdate={onNextPaymentDateUpdate}
           />
 
+          {errorMessage ? (
+            <p className="text-sm text-red-400" role="alert">
+              {errorMessage}
+            </p>
+          ) : null}
+
           <div className="flex justify-end gap-3 pt-2">
-            <Button view="outlined" type="button" onClick={onClose}>
+            <Button
+              view="outlined"
+              type="button"
+              onClick={onClose}
+              disabled={isSubmitting}
+            >
               Cancel
             </Button>
             <Button
               view="action"
               type="submit"
-              disabled={!values.interval || !values.nextPaymentDate}
+              loading={isSubmitting}
+              disabled={!values.nextPaymentDate || isSubmitting}
             >
               Save
             </Button>

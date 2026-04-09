@@ -5,15 +5,19 @@ import { randomUUID } from 'crypto';
 import { prisma } from '@/utils/prisma';
 import { Prisma } from '@/generated/prisma/client';
 
-export type RegisterResult =
-  | { ok: true }
-  | { ok: false; error: 'exists' | 'unknown' };
-
-export async function registerUser(input: {
+export type CreateUserInput = {
   name: string;
   email: string;
   password: string;
-}): Promise<RegisterResult> {
+};
+
+export type CreateUserResult =
+  | { ok: true }
+  | { ok: false; error: 'exists' | 'unknown' };
+
+export async function createUser(
+  input: CreateUserInput,
+): Promise<CreateUserResult> {
   try {
     const email = input.email.trim().toLowerCase();
     const name = input.name.trim();
@@ -35,7 +39,7 @@ export async function registerUser(input: {
     });
     return { ok: true };
   } catch (error) {
-    console.error('registerUser failed', error);
+    console.error('createUser failed', error);
     if (
       error instanceof Prisma.PrismaClientKnownRequestError &&
       error.code === 'P2002'

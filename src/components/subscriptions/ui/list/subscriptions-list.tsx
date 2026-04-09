@@ -1,11 +1,8 @@
 'use client';
 
-import type { Subscription } from '@/hooks/useSubscriptions';
+import type { IntervalValue, Subscription } from '@/types/subscription';
 import { SubscriptionCard } from '@/components/subscriptions/ui/card/subscription-card';
-import {
-  subscriptionIntervals,
-  type IntervalValue,
-} from '@/components/subscriptions/ui/forms';
+import { subscriptionIntervals } from '@/components/subscriptions/ui/forms';
 
 function getIntervalLabel(value: IntervalValue): string {
   return (

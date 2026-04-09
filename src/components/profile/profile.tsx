@@ -1,6 +1,6 @@
 'use client';
 
-import { updateProfile } from '@/actions/updateProfile';
+import { updateUser } from '@/actions/updateUser';
 import { useForm } from '@/hooks/useForm';
 import { Button, PasswordInput, TextInput } from '@gravity-ui/uikit';
 import { useSession } from 'next-auth/react';
@@ -24,7 +24,9 @@ export function Profile({ initialName, email }: ProfileProps) {
   const [success, setSuccess] = useState<string | null>(null);
 
   const hasChanges = useMemo(() => {
-    return values.name.trim() !== initialName.trim() || values.password.trim() !== '';
+    return (
+      values.name.trim() !== initialName.trim() || values.password.trim() !== ''
+    );
   }, [initialName, values.name, values.password]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -36,7 +38,7 @@ export function Profile({ initialName, email }: ProfileProps) {
     setPending(true);
 
     try {
-      const result = await updateProfile({
+      const result = await updateUser({
         name: values.name,
         password: values.password,
       });
@@ -96,12 +98,12 @@ export function Profile({ initialName, email }: ProfileProps) {
       />
 
       {error ? (
-        <p className="text-sm text-[var(--g-color-text-danger)]" role="alert">
+        <p className="text-sm text-(--g-color-text-danger)" role="alert">
           {error}
         </p>
       ) : null}
       {success ? (
-        <p className="text-sm text-[var(--g-color-text-positive)]" role="status">
+        <p className="text-sm text-(--g-color-text-positive)" role="status">
           {success}
         </p>
       ) : null}

@@ -1,29 +1,25 @@
 'use client';
 
 import { dateTimeParse, type DateTime } from '@gravity-ui/date-utils';
-import { useState, type ChangeEvent, type SubmitEvent } from 'react';
+import {
+  useEffect,
+  useState,
+  type ChangeEvent,
+  type SubmitEvent,
+} from 'react';
+import { createSubscription } from '@/actions/createSubscription';
+import { deleteSubscription } from '@/actions/deleteSubscription';
+import { updateSubscription } from '@/actions/updateSubscription';
 import {
   displayDateFormat,
   initialSubscriptionFormValues,
-  subscriptionIntervals,
-  type IntervalValue,
   type SubscriptionFormValues,
 } from '@/components/subscriptions/ui/forms';
 import { useModal } from '@/hooks/useModal';
+import { getSubscriptionActionErrorMessage } from '@/helpers/getSubscriptionActionErrorMessage';
+import { isIntervalValue } from '@/helpers/isIntervalValue';
+import type { Subscription } from '@/types/subscription';
 
-export type Subscription = {
-  id: string;
-  name: string;
-  price: string;
-  interval: IntervalValue;
-  nextPaymentDate: string;
-};
-
-function isIntervalValue(value: string): value is IntervalValue {
-  return subscriptionIntervals.some((interval) => interval.value === value);
-}
-
-/** Заполняет форму из сохранённой подписки (дата в формате DD.MM.YYYY). */
 function subscriptionRecordToFormValues(
   subscription: Subscription,
 ): SubscriptionFormValues {
@@ -40,16 +36,25 @@ function subscriptionRecordToFormValues(
   };
 }
 
-export function useSubscriptions() {
+export function useSubscriptions(initialSubscriptions: Subscription[]) {
   const addEditModal = useModal();
   const deleteConfirmModal = useModal();
 
-  const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
+  const [subscriptions, setSubscriptions] =
+    useState<Subscription[]>(initialSubscriptions);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const [values, setValues] = useState<SubscriptionFormValues>(
     initialSubscriptionFormValues,
   );
+  const [formError, setFormError] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  useEffect(() => {
+    setSubscriptions(initialSubscriptions);
+  }, [initialSubscriptions]);
 
   const isEmpty = subscriptions.length === 0;
 
@@ -64,6 +69,7 @@ export function useSubscriptions() {
   function resetFormModal() {
     setEditingId(null);
     setValues(initialSubscriptionFormValues);
+    setFormError(null);
   }
 
   function openAddModal() {
@@ -73,6 +79,7 @@ export function useSubscriptions() {
 
   function openEditModal(subscription: Subscription) {
     setEditingId(subscription.id);
+    setFormError(null);
     setValues(subscriptionRecordToFormValues(subscription));
     addEditModal.open();
   }
@@ -83,21 +90,34 @@ export function useSubscriptions() {
   }
 
   function requestDelete(id: string) {
+    setDeleteError(null);
     setPendingDeleteId(id);
     deleteConfirmModal.open();
   }
 
   function cancelDelete() {
     setPendingDeleteId(null);
+    setDeleteError(null);
     deleteConfirmModal.close();
   }
 
-  function confirmDelete() {
-    if (pendingDeleteId) {
-      setSubscriptions((prev) => prev.filter((s) => s.id !== pendingDeleteId));
+  async function confirmDelete() {
+    if (!pendingDeleteId) return;
+    const id = pendingDeleteId;
+    setIsDeleting(true);
+    setDeleteError(null);
+    try {
+      const result = await deleteSubscription(id);
+      if (!result.ok) {
+        setDeleteError(getSubscriptionActionErrorMessage(result.error));
+        return;
+      }
+      setSubscriptions((prev) => prev.filter((s) => s.id !== id));
+      setPendingDeleteId(null);
+      deleteConfirmModal.close();
+    } finally {
+      setIsDeleting(false);
     }
-    setPendingDeleteId(null);
-    deleteConfirmModal.close();
   }
 
   function handleChange(event: ChangeEvent<HTMLInputElement>) {
@@ -109,7 +129,8 @@ export function useSubscriptions() {
     const nextValue = newValue[0];
     setValues((prev) => ({
       ...prev,
-      interval: nextValue && isIntervalValue(nextValue) ? nextValue : null,
+      interval:
+        nextValue && isIntervalValue(nextValue) ? nextValue : prev.interval,
     }));
   }
 
@@ -117,43 +138,53 @@ export function useSubscriptions() {
     setValues((prev) => ({ ...prev, nextPaymentDate: value }));
   }
 
-  function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
+  async function handleSubmit(event: SubmitEvent<HTMLFormElement>) {
     event.preventDefault();
-    const interval = values.interval;
     const nextPaymentDateDt = values.nextPaymentDate;
-    if (!interval || !nextPaymentDateDt) return;
+    if (!nextPaymentDateDt) return;
 
     const nextPaymentDateStr = nextPaymentDateDt.format(displayDateFormat);
     const name = values.name.trim();
     const price = values.price.trim();
 
-    if (editingId !== null) {
-      setSubscriptions((prev) =>
-        prev.map((s) =>
-          s.id === editingId
-            ? {
-                ...s,
-                name,
-                price,
-                interval,
-                nextPaymentDate: nextPaymentDateStr,
-              }
-            : s,
-        ),
-      );
-    } else {
-      const nextItem: Subscription = {
-        id: crypto.randomUUID(),
-        name,
-        price,
-        interval,
-        nextPaymentDate: nextPaymentDateStr,
-      };
-      setSubscriptions((prev) => [...prev, nextItem]);
-    }
+    setIsSubmitting(true);
+    setFormError(null);
 
-    resetFormModal();
-    addEditModal.close();
+    try {
+      if (editingId !== null) {
+        const result = await updateSubscription({
+          id: editingId,
+          name,
+          price,
+          interval: values.interval,
+          nextPaymentDate: nextPaymentDateStr,
+        });
+        if (!result.ok) {
+          setFormError(getSubscriptionActionErrorMessage(result.error));
+          return;
+        }
+        setSubscriptions((prev) =>
+          prev.map((s) => (s.id === editingId ? result.subscription : s)),
+        );
+      } else {
+        const result = await createSubscription({
+          name,
+          price,
+          interval: values.interval,
+          nextPaymentDate: nextPaymentDateStr,
+        });
+        if (!result.ok) {
+          setFormError(getSubscriptionActionErrorMessage(result.error));
+          return;
+        }
+        setSubscriptions((prev) => [...prev, result.subscription]);
+      }
+
+      resetFormModal();
+      addEditModal.close();
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return {
@@ -172,6 +203,8 @@ export function useSubscriptions() {
       onChange: handleChange,
       onIntervalUpdate: handleIntervalUpdate,
       onNextPaymentDateUpdate: handleNextPaymentDateUpdate,
+      errorMessage: formError,
+      isSubmitting,
     },
     deleteDialog: subscriptionPendingDelete
       ? {
@@ -179,6 +212,8 @@ export function useSubscriptions() {
           subscriptionName: subscriptionPendingDelete.name,
           onCancel: cancelDelete,
           onConfirm: confirmDelete,
+          isDeleting,
+          errorMessage: deleteError,
         }
       : null,
   };
