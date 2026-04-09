@@ -17,13 +17,13 @@ export default function Header() {
       className="sticky top-0 z-50 w-full border-b border-gray-800 bg-black/80 backdrop-blur-lg"
       style={{ height: layoutConfig.headerHeight }}
     >
-      <div className="container mx-auto flex h-16 items-center justify-between px-4">
-        <NextLink href="/" className="text-xl font-bold text-white">
+      <div className="container mx-auto grid h-16 grid-cols-[1fr_auto_1fr] items-center px-4">
+        <NextLink href="/" className="justify-self-start text-xl font-bold text-white">
           {appConfig.title}
         </NextLink>
 
         {/* Навигация */}
-        <nav className="hidden md:flex items-center gap-6">
+        <nav className="hidden items-center gap-6 justify-self-center md:flex">
           {appConfig.navigation.map(({ title, href }) => (
             <NextLink
               href={href}
@@ -36,7 +36,7 @@ export default function Header() {
         </nav>
 
         {/* Вход / профиль */}
-        <div className="hidden md:flex items-center gap-3">
+        <div className="hidden items-center gap-3 justify-self-end md:flex">
           {status === 'loading' ? (
             <div className="h-9 w-32" aria-hidden="true" />
           ) : status === 'authenticated' ? (
