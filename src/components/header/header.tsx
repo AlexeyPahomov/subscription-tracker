@@ -51,13 +51,13 @@ export default function Header() {
                 </span>
               </NextLink>
               <Button view="outlined" onClick={() => signOut()}>
-                Logout
+                Sign out
               </Button>
             </>
           ) : (
             <>
               <Button view="outlined" onClick={openLogin}>
-                Login
+                Sign in
               </Button>
               <Button view="action" onClick={openRegister}>
                 Sign Up

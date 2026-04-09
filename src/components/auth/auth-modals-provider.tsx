@@ -161,7 +161,7 @@ export function AuthModalsProvider({ children }: { children: ReactNode }) {
                 loading={loginPending}
                 disabled={loginPending}
               >
-                Login
+                Sign in
               </Button>
             </div>
           </form>
