@@ -59,7 +59,7 @@ export function ProfileMenu({ name, email }: ProfileMenuProps) {
           avatar={{ text: name, theme: 'brand' }}
           name={name}
           description={email}
-          size="s"
+          size="m"
         />
       </div>
 

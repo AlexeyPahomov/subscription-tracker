@@ -1,5 +1,5 @@
 import { auth } from '@/auth';
-import { ProfileForm } from '@/components/profile/profile-form';
+import { Profile } from '@/components/profile/profile';
 import { redirect } from 'next/navigation';
 
 export default async function ProfilePage() {
@@ -11,7 +11,7 @@ export default async function ProfilePage() {
 
   return (
     <section className="w-full px-4 py-10">
-      <ProfileForm
+      <Profile
         initialName={session.user.name ?? ''}
         email={session.user.email}
       />

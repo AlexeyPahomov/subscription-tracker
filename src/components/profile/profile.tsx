@@ -6,12 +6,12 @@ import { Button, PasswordInput, TextInput } from '@gravity-ui/uikit';
 import { useSession } from 'next-auth/react';
 import { useMemo, useState, type FormEvent } from 'react';
 
-type ProfileFormProps = {
+type ProfileProps = {
   initialName: string;
   email: string;
 };
 
-export function ProfileForm({ initialName, email }: ProfileFormProps) {
+export function Profile({ initialName, email }: ProfileProps) {
   const { update } = useSession();
   const { values, handleChange, setValues } = useForm({
     name: initialName,
