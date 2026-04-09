@@ -6,11 +6,13 @@ import { appConfig } from '@/config/app.config';
 import { layoutConfig } from '@/config/layout.config';
 import { Button } from '@gravity-ui/uikit';
 import NextLink from 'next/link';
+import { usePathname } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 
 export default function Header() {
   const { openLogin, openRegister } = useAuthModals();
   const { data: session, status } = useSession();
+  const pathname = usePathname();
 
   return (
     <header
@@ -28,7 +30,11 @@ export default function Header() {
             <NextLink
               href={href}
               key={href}
-              className="text-gray-300 text-[18px] transition-colors hover:text-white"
+              className={`text-[18px] transition-colors ${
+                pathname === href
+                  ? 'text-white'
+                  : 'text-gray-300 hover:text-white'
+              }`}
             >
               {title}
             </NextLink>
