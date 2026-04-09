@@ -37,7 +37,10 @@ export default function Header() {
         <div className="hidden md:flex items-center gap-3">
           {status === 'authenticated' ? (
             <>
-              <span className="flex max-w-[200px] items-center gap-1 truncate text-sm text-gray-300">
+              <NextLink
+                href="/profile"
+                className="flex max-w-[200px] items-center gap-1 truncate text-sm text-gray-300 transition-colors hover:text-white"
+              >
                 <Icon
                   data={Person}
                   size={16}
@@ -46,7 +49,7 @@ export default function Header() {
                 <span className="truncate">
                   {session.user?.name ?? session.user?.email}
                 </span>
-              </span>
+              </NextLink>
               <Button view="outlined" onClick={() => signOut()}>
                 Logout
               </Button>

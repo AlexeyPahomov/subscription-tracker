@@ -31,13 +31,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
-    jwt({ token, user }) {
+    jwt({ token, user, trigger, session }) {
       if (user) {
         token.id = user.id;
         if (user.name !== undefined && user.name !== null) {
           token.name = user.name;
         }
         if (user.email) token.email = user.email;
+      }
+
+      if (trigger === 'update' && session?.name) {
+        token.name = session.name;
       }
       return token;
     },
