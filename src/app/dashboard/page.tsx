@@ -1,17 +1,16 @@
 import { auth } from '@/auth';
-import { Subscriptions } from '@/components/subscriptions/subscriptions';
-import { getSubscriptionsByUserId } from '@/helpers/getSubscriptionsByUserId';
 import { redirect } from 'next/navigation';
 
 export default async function DashboardPage() {
   const session = await auth();
-  const userId = session?.user?.id;
 
-  if (!userId) {
+  if (!session?.user?.id) {
     redirect('/');
   }
 
-  const initialSubscriptions = await getSubscriptionsByUserId(userId);
-
-  return <Subscriptions initialSubscriptions={initialSubscriptions} />;
+  return (
+    <section className="w-full px-4 py-10">
+      <h1 className="text-2xl font-semibold">Dashboard</h1>
+    </section>
+  );
 }

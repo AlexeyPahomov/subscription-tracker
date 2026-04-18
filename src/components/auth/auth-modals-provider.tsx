@@ -78,7 +78,7 @@ export function AuthModalsProvider({ children }: { children: ReactNode }) {
       }
       loginModal.close();
       setLoginValues({ email: '', password: '' });
-      router.push('/dashboard');
+      router.push('/subscriptions');
     } finally {
       setLoginPending(false);
     }
@@ -113,7 +113,7 @@ export function AuthModalsProvider({ children }: { children: ReactNode }) {
       }
       registerModal.close();
       setRegisterValues({ name: '', email: '', password: '' });
-      router.push('/dashboard');
+      router.push('/subscriptions');
     } finally {
       setRegPending(false);
     }
