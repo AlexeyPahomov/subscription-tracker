@@ -10,6 +10,7 @@ import {
 } from '@gravity-ui/uikit';
 import type { ChangeEvent, SubmitEvent } from 'react';
 import { intervalSelectOptions } from './constants';
+import type { UserCategoryOption } from '@/helpers/getCategoriesByUserId';
 import type { SubscriptionFormValues } from './types';
 
 type SubscriptionFormProps = {
@@ -17,9 +18,11 @@ type SubscriptionFormProps = {
   title: string;
   onClose: () => void;
   values: SubscriptionFormValues;
+  categories: UserCategoryOption[];
   onSubmit: (event: SubmitEvent<HTMLFormElement>) => void | Promise<void>;
   onChange: (event: ChangeEvent<HTMLInputElement>) => void;
   onIntervalUpdate: (newValue: string[]) => void;
+  onCategoryUpdate: (newValue: string[]) => void;
   onNextPaymentDateUpdate: (value: DateTime | null) => void;
   errorMessage?: string | null;
   isSubmitting?: boolean;
@@ -30,13 +33,23 @@ export function SubscriptionForm({
   title,
   onClose,
   values,
+  categories,
   onSubmit,
   onChange,
   onIntervalUpdate,
+  onCategoryUpdate,
   onNextPaymentDateUpdate,
   errorMessage,
   isSubmitting = false,
 }: SubscriptionFormProps) {
+  const categoryOptions = [
+    { value: '', content: 'No category' },
+    ...categories.map((c) => ({
+      value: c.id,
+      content: c.name,
+    })),
+  ];
+
   return (
     <Dialog open={open} size="m" onClose={onClose} hasCloseButton>
       <Dialog.Header caption={title} />
@@ -63,6 +76,12 @@ export function SubscriptionForm({
             options={intervalSelectOptions}
             value={[values.interval]}
             onUpdate={onIntervalUpdate}
+          />
+          <Select
+            placeholder="Category"
+            options={categoryOptions}
+            value={[values.categoryId]}
+            onUpdate={onCategoryUpdate}
           />
           <DatePicker
             placeholder="Select next payment date"

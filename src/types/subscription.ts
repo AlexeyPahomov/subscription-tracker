@@ -1,11 +1,19 @@
 export type IntervalValue = 'monthly' | 'yearly' | 'weekly' | 'quarterly';
 
+export type SubscriptionCategory = {
+  id: string;
+  name: string;
+  color: string | null;
+  icon: string | null;
+};
+
 export type Subscription = {
   id: string;
   name: string;
   price: string;
   interval: IntervalValue;
   nextPaymentDate: string;
+  category: SubscriptionCategory | null;
 };
 
 export type SubscriptionActionError =
@@ -33,4 +41,6 @@ export type CreateSubscriptionInput = {
   price: string;
   interval: string;
   nextPaymentDate: string;
+  /** Пустая строка / null — без категории */
+  categoryId?: string | null;
 };

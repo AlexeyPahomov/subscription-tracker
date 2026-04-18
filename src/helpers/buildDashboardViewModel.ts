@@ -1,4 +1,4 @@
-import type { DashboardSpendAnalytics } from '@/helpers/getDashboardSpendAnalytics';
+import type { DashboardSpendAnalytics } from '@/types/dashboard-analytics';
 import type {
   UpcomingPaymentItem,
   UpcomingPaymentUrgency,

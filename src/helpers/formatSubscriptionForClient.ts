@@ -1,4 +1,7 @@
-import type { Subscription as DbSubscription } from '@/generated/prisma/client';
+import type {
+  Category as DbCategory,
+  Subscription as DbSubscription,
+} from '@/generated/prisma/client';
 import type { IntervalValue } from '@/types/subscription';
 import type { Subscription } from '@/types/subscription';
 import { defaultSubscriptionCurrency } from '@/constants';
@@ -36,12 +39,23 @@ export function formatPriceForDisplay(price: number, currency: string): string {
   }
 }
 
-export function formatSubscriptionForClient(row: DbSubscription): Subscription {
+type SubscriptionRow = DbSubscription & { category?: DbCategory | null };
+
+export function formatSubscriptionForClient(row: SubscriptionRow): Subscription {
+  const cat = row.category;
   return {
     id: row.id,
     name: row.name,
     price: formatPriceForDisplay(row.price, row.currency),
     interval: normalizeInterval(row.interval),
     nextPaymentDate: formatDisplayDate(new Date(row.nextBilling)),
+    category: cat
+      ? {
+          id: cat.id,
+          name: cat.name,
+          color: cat.color,
+          icon: cat.icon,
+        }
+      : null,
   };
 }

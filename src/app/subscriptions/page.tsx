@@ -1,5 +1,6 @@
 import { auth } from '@/auth';
 import { Subscriptions } from '@/components/subscriptions/subscriptions';
+import { getCategoriesByUserId } from '@/helpers/getCategoriesByUserId';
 import { getSubscriptionsByUserId } from '@/helpers/getSubscriptionsByUserId';
 import { redirect } from 'next/navigation';
 
@@ -11,7 +12,15 @@ export default async function SubscriptionsPage() {
     redirect('/');
   }
 
-  const initialSubscriptions = await getSubscriptionsByUserId(userId);
+  const [initialSubscriptions, categories] = await Promise.all([
+    getSubscriptionsByUserId(userId),
+    getCategoriesByUserId(userId),
+  ]);
 
-  return <Subscriptions initialSubscriptions={initialSubscriptions} />;
+  return (
+    <Subscriptions
+      initialSubscriptions={initialSubscriptions}
+      categories={categories}
+    />
+  );
 }

@@ -16,6 +16,7 @@ import {
   type SubscriptionFormValues,
 } from '@/components/subscriptions/ui/forms';
 import { useModal } from '@/hooks/useModal';
+import type { UserCategoryOption } from '@/helpers/getCategoriesByUserId';
 import { getSubscriptionActionErrorMessage } from '@/helpers/getSubscriptionActionErrorMessage';
 import { isIntervalValue } from '@/helpers/isIntervalValue';
 import type { Subscription } from '@/types/subscription';
@@ -32,11 +33,15 @@ function subscriptionRecordToFormValues(
     name: subscription.name,
     price: subscription.price,
     interval: subscription.interval,
+    categoryId: subscription.category?.id ?? '',
     nextPaymentDate,
   };
 }
 
-export function useSubscriptions(initialSubscriptions: Subscription[]) {
+export function useSubscriptions(
+  initialSubscriptions: Subscription[],
+  categoryOptions: UserCategoryOption[],
+) {
   const addEditModal = useModal();
   const deleteConfirmModal = useModal();
 
@@ -134,6 +139,14 @@ export function useSubscriptions(initialSubscriptions: Subscription[]) {
     }));
   }
 
+  function handleCategoryUpdate(newValue: string[]) {
+    const nextValue = newValue[0];
+    setValues((prev) => ({
+      ...prev,
+      categoryId: nextValue ?? '',
+    }));
+  }
+
   function handleNextPaymentDateUpdate(value: DateTime | null) {
     setValues((prev) => ({ ...prev, nextPaymentDate: value }));
   }
@@ -158,6 +171,7 @@ export function useSubscriptions(initialSubscriptions: Subscription[]) {
           price,
           interval: values.interval,
           nextPaymentDate: nextPaymentDateStr,
+          categoryId: values.categoryId || null,
         });
         if (!result.ok) {
           setFormError(getSubscriptionActionErrorMessage(result.error));
@@ -172,6 +186,7 @@ export function useSubscriptions(initialSubscriptions: Subscription[]) {
           price,
           interval: values.interval,
           nextPaymentDate: nextPaymentDateStr,
+          categoryId: values.categoryId || null,
         });
         if (!result.ok) {
           setFormError(getSubscriptionActionErrorMessage(result.error));
@@ -199,9 +214,11 @@ export function useSubscriptions(initialSubscriptions: Subscription[]) {
       title: dialogTitle,
       onClose: closeFormModal,
       values,
+      categories: categoryOptions,
       onSubmit: handleSubmit,
       onChange: handleChange,
       onIntervalUpdate: handleIntervalUpdate,
+      onCategoryUpdate: handleCategoryUpdate,
       onNextPaymentDateUpdate: handleNextPaymentDateUpdate,
       errorMessage: formError,
       isSubmitting,

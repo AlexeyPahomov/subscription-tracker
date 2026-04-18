@@ -7,6 +7,7 @@ import type {
   SubscriptionWriteResult,
 } from '@/types/subscription';
 import { getAuthenticatedUserId } from '@/helpers/getAuthenticatedUserId';
+import { resolveCategoryIdForUser } from '@/helpers/resolveCategoryIdForUser';
 import { defaultSubscriptionCurrency } from '@/constants';
 import { prisma } from '@/utils/prisma';
 
@@ -28,6 +29,11 @@ export async function updateSubscription(
   const { name, price, interval, nextBilling } = parsed;
   const { userId } = authResult;
 
+  const categoryResolved = await resolveCategoryIdForUser(userId, input.categoryId);
+  if (!categoryResolved.ok) {
+    return { ok: false, error: 'validation' };
+  }
+
   try {
     const updated = await prisma.subscription.updateMany({
       where: { id: input.id, userId },
@@ -37,6 +43,7 @@ export async function updateSubscription(
         currency: defaultSubscriptionCurrency,
         interval,
         nextBilling,
+        categoryId: categoryResolved.categoryId,
       },
     });
 
@@ -46,6 +53,7 @@ export async function updateSubscription(
 
     const row = await prisma.subscription.findUniqueOrThrow({
       where: { id: input.id },
+      include: { category: true },
     });
 
     return { ok: true, subscription: formatSubscriptionForClient(row) };

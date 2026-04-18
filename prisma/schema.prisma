@@ -13,17 +13,37 @@ model User {
   name          String?
   password      String
   subscriptions Subscription[]
+  categories    Category[]
   createdAt     DateTime       @default(now())
 }
 
+model Category {
+  id             String         @id @default(cuid())
+  name           String
+  color          String?
+  icon           String?
+  userId         String
+  user           User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subscriptions  Subscription[]
+  createdAt      DateTime       @default(now())
+
+  @@index([userId])
+}
+
 model Subscription {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   name        String
   price       Float
   currency    String // "USD", "EUR", "TRY"
   interval    String // "monthly", "yearly"
   nextBilling DateTime
   userId      String
-  user        User     @relation(fields: [userId], references: [id])
-  createdAt   DateTime @default(now())
+  user        User      @relation(fields: [userId], references: [id])
+
+  categoryId  String?
+  category    Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+
+  createdAt   DateTime  @default(now())
+
+  @@index([categoryId])
 }

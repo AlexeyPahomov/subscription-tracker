@@ -7,6 +7,7 @@ import type {
   SubscriptionWriteResult,
 } from '@/types/subscription';
 import { getAuthenticatedUserId } from '@/helpers/getAuthenticatedUserId';
+import { resolveCategoryIdForUser } from '@/helpers/resolveCategoryIdForUser';
 import { defaultSubscriptionCurrency } from '@/constants';
 import { prisma } from '@/utils/prisma';
 
@@ -23,6 +24,14 @@ export async function createSubscription(
 
   const { name, price, interval, nextBilling } = parsed;
 
+  const categoryResolved = await resolveCategoryIdForUser(
+    authResult.userId,
+    input.categoryId,
+  );
+  if (!categoryResolved.ok) {
+    return { ok: false, error: 'validation' };
+  }
+
   try {
     const row = await prisma.subscription.create({
       data: {
@@ -32,7 +41,9 @@ export async function createSubscription(
         interval,
         nextBilling,
         userId: authResult.userId,
+        categoryId: categoryResolved.categoryId,
       },
+      include: { category: true },
     });
     return { ok: true, subscription: formatSubscriptionForClient(row) };
   } catch {

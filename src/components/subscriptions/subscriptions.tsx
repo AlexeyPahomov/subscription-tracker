@@ -8,14 +8,19 @@ import {
   SubscriptionsEmpty,
   SubscriptionsList,
 } from '@/components/subscriptions/ui';
+import type { UserCategoryOption } from '@/helpers/getCategoriesByUserId';
 import type { Subscription } from '@/types/subscription';
 import { useEffect } from 'react';
 
 type SubscriptionsProps = {
   initialSubscriptions: Subscription[];
+  categories: UserCategoryOption[];
 };
 
-export function Subscriptions({ initialSubscriptions }: SubscriptionsProps) {
+export function Subscriptions({
+  initialSubscriptions,
+  categories,
+}: SubscriptionsProps) {
   const {
     subscriptions,
     isEmpty,
@@ -24,7 +29,7 @@ export function Subscriptions({ initialSubscriptions }: SubscriptionsProps) {
     requestDelete,
     formDialog,
     deleteDialog,
-  } = useSubscriptions(initialSubscriptions);
+  } = useSubscriptions(initialSubscriptions, categories);
 
   useEffect(() => {
     const raw = window.location.hash.replace(/^#/, '');

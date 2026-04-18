@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import type { IconData } from '@gravity-ui/uikit';
+import type { SubscriptionCategory } from '@/types/subscription';
 
 export type SubscriptionCardProps = {
   subscriptionId: string;
@@ -7,6 +8,7 @@ export type SubscriptionCardProps = {
   price: string;
   interval: string;
   nextPaymentDate: string;
+  category: SubscriptionCategory | null;
   /** Индекс для цвета fallback-аватара, если нет лого бренда */
   brandIndex?: number;
   onEdit: () => void;

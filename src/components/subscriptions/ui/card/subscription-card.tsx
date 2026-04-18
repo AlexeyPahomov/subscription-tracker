@@ -11,6 +11,7 @@ export function SubscriptionCard({
   price,
   interval,
   nextPaymentDate,
+  category,
   brandIndex = 0,
   onEdit,
   onDelete,
@@ -38,7 +39,21 @@ export function SubscriptionCard({
         />
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-3">
-            <h3 className="text-xl font-semibold text-white">{name}</h3>
+            <div className="min-w-0">
+              <h3 className="text-xl font-semibold text-white">{name}</h3>
+              {category ? (
+                <p className="mt-1.5 flex items-center gap-1.5 text-sm text-gray-400">
+                  <span
+                    className="h-2 w-2 shrink-0 rounded-full"
+                    style={{
+                      backgroundColor: category.color ?? '#6b7280',
+                    }}
+                    aria-hidden
+                  />
+                  <span>{category.name}</span>
+                </p>
+              ) : null}
+            </div>
             <div className="flex shrink-0 items-center gap-1">
               <CardIconAction
                 icon={PencilToSquare}

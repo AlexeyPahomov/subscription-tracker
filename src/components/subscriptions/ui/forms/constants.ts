@@ -15,6 +15,7 @@ export const initialSubscriptionFormValues: SubscriptionFormValues = {
   name: '',
   price: '',
   interval: subscriptionIntervals[0]!.value,
+  categoryId: '',
   nextPaymentDate: null,
 };
 

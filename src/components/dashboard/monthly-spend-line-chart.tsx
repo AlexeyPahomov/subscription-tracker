@@ -2,7 +2,7 @@
 
 import { dashboardLineChartCardClassName } from '@/components/dashboard/dashboard-card-styles';
 import { DASHBOARD_LINE_STROKE } from '@/constants/dashboard-chart';
-import type { MonthlySpendPoint } from '@/helpers/getDashboardSpendAnalytics';
+import type { MonthlySpendPoint } from '@/types/dashboard-analytics';
 import {
   formatMoneyAmount,
   formatMoneyCompactTick,

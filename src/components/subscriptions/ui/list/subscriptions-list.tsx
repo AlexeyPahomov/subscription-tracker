@@ -32,6 +32,7 @@ export function SubscriptionsList({
           price={subscription.price}
           interval={getIntervalLabel(subscription.interval)}
           nextPaymentDate={subscription.nextPaymentDate}
+          category={subscription.category}
           brandIndex={index}
           onEdit={() => onEdit(subscription)}
           onDelete={() => onDelete(subscription.id)}

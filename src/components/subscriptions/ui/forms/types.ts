@@ -10,5 +10,7 @@ export type SubscriptionFormValues = {
   name: string;
   price: string;
   interval: IntervalValue;
+  /** Пустая строка — без категории */
+  categoryId: string;
   nextPaymentDate: DateTime | null;
 };

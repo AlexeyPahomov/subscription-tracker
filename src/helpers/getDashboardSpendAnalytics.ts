@@ -1,41 +1,28 @@
 import { defaultSubscriptionCurrency } from '@/constants';
+import {
+  buildPieSlicesFromCategories,
+  buildPieSlicesFromRankedSubscriptions,
+  groupSpendByCategory,
+  type SubscriptionRowForPie,
+} from '@/helpers/buildDashboardPieSlices';
 import { formatPriceForDisplay } from '@/helpers/formatSubscriptionForClient';
 import { subscriptionPricePerMonth } from '@/helpers/subscriptionPricePerMonth';
+import type {
+  DashboardSpendAnalytics,
+  MonthlySpendPoint,
+  TopSubscriptionSummary,
+} from '@/types/dashboard-analytics';
 import { prisma } from '@/utils/prisma';
 import { format } from 'date-fns';
 import { enUS } from 'date-fns/locale';
 
-export type MonthlySpendPoint = {
-  monthKey: string;
-  label: string;
-  amount: number;
-};
+export type {
+  DashboardSpendAnalytics,
+  MonthlySpendPoint,
+  SubscriptionSpendSlice,
+  TopSubscriptionSummary,
+} from '@/types/dashboard-analytics';
 
-export type SubscriptionSpendSlice = {
-  name: string;
-  monthlyAmount: number;
-  percent: number;
-};
-
-export type TopSubscriptionSummary = {
-  id: string;
-  name: string;
-  priceLabel: string;
-};
-
-export type DashboardSpendAnalytics = {
-  monthlySpendSeries: MonthlySpendPoint[];
-  currentMonthlyTotal: number;
-  subscriptionCount: number;
-  displayCurrency: string;
-  subscriptionBreakdown: SubscriptionSpendSlice[];
-  spendTrendPercent: number | null;
-  topSubscription: TopSubscriptionSummary | null;
-  subscriptionsAddedThisMonth: number;
-};
-
-const PIE_TOP_N = 5;
-const OTHERS_SLICE_NAME = 'Others';
 const PROJECTED_MONTHS = 12;
 
 /** Лёгкая детерминированная вариация (~±1–2%) для линии прогноза */
@@ -43,11 +30,9 @@ const PROJECTED_SPEND_MULTIPLIERS = [
   1, 1, 1.015, 1, 0.99, 1, 1.01, 1, 1, 0.995, 1, 1.008,
 ] as const;
 
-type SubscriptionRow = {
+type SubscriptionRow = SubscriptionRowForPie & {
   id: string;
   name: string;
-  price: number;
-  interval: string;
   createdAt: Date;
   currency: string;
 };
@@ -57,8 +42,6 @@ type RankedSlice = {
   name: string;
   monthlyAmount: number;
 };
-
-type SliceWithPercent = RankedSlice & { percent: number };
 
 function endOfMonth(year: number, monthIndex0: number): Date {
   return new Date(year, monthIndex0 + 1, 0, 23, 59, 59, 999);
@@ -99,43 +82,6 @@ function toTopSubscription(
   };
 }
 
-function buildPieBreakdown(ranked: RankedSlice[]): SubscriptionSpendSlice[] {
-  const total = ranked.reduce((s, x) => s + x.monthlyAmount, 0);
-  const withPercent: SliceWithPercent[] = ranked.map((s) => ({
-    ...s,
-    percent: total > 0 ? (s.monthlyAmount / total) * 100 : 0,
-  }));
-
-  const toPublicSlice = ({
-    name,
-    monthlyAmount,
-    percent,
-  }: SliceWithPercent): SubscriptionSpendSlice => ({
-    name,
-    monthlyAmount,
-    percent,
-  });
-
-  if (withPercent.length <= PIE_TOP_N) {
-    return withPercent.map(toPublicSlice);
-  }
-
-  const top = withPercent.slice(0, PIE_TOP_N);
-  const rest = withPercent.slice(PIE_TOP_N);
-  const othersAmount = rest.reduce((s, x) => s + x.monthlyAmount, 0);
-  const othersPercent =
-    total > 0 ? (othersAmount / total) * 100 : 0;
-
-  return [
-    ...top.map(toPublicSlice),
-    {
-      name: OTHERS_SLICE_NAME,
-      monthlyAmount: othersAmount,
-      percent: othersPercent,
-    },
-  ];
-}
-
 function buildMonthlyProjectionSeries(
   now: Date,
   currentMonthlyTotal: number,
@@ -166,6 +112,9 @@ export async function getDashboardSpendAnalytics(
       interval: true,
       createdAt: true,
       currency: true,
+      category: {
+        select: { id: true, name: true, color: true },
+      },
     },
   });
 
@@ -182,10 +131,12 @@ export async function getDashboardSpendAnalytics(
     return sum + subscriptionPricePerMonth(row.price, row.interval);
   }, 0);
 
-  const rankedForPie = rankByMonthlyAmount(rows);
+  const rankedForTop = rankByMonthlyAmount(rows);
+  const categoryBuckets = groupSpendByCategory(rows);
 
-  const topSubscription = toTopSubscription(rankedForPie, displayCurrency);
-  const subscriptionBreakdown = buildPieBreakdown(rankedForPie);
+  const topSubscription = toTopSubscription(rankedForTop, displayCurrency);
+  const pieByCategory = buildPieSlicesFromCategories(categoryBuckets);
+  const pieBySubscription = buildPieSlicesFromRankedSubscriptions(rankedForTop);
 
   const prevMonth = new Date(now.getFullYear(), now.getMonth() - 1, 15);
   const endPrevMonth = endOfMonth(
@@ -217,7 +168,8 @@ export async function getDashboardSpendAnalytics(
     currentMonthlyTotal,
     subscriptionCount,
     displayCurrency,
-    subscriptionBreakdown,
+    pieByCategory,
+    pieBySubscription,
     spendTrendPercent,
     topSubscription,
     subscriptionsAddedThisMonth,

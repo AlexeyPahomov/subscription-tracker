@@ -61,7 +61,8 @@ export default async function DashboardPage() {
             currencyCode={analytics.displayCurrency}
           />
           <SubscriptionSpendPieChart
-            data={analytics.subscriptionBreakdown}
+            pieByCategory={analytics.pieByCategory}
+            pieBySubscription={analytics.pieBySubscription}
             currencyCode={analytics.displayCurrency}
           />
         </div>

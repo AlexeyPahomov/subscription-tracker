@@ -2,6 +2,7 @@
 
 import { hash } from 'bcryptjs';
 import { randomUUID } from 'crypto';
+import { ensureDefaultCategoriesForUser } from '@/helpers/ensureDefaultCategoriesForUser';
 import { prisma } from '@/utils/prisma';
 import { Prisma } from '@/generated/prisma/client';
 
@@ -29,7 +30,7 @@ export async function createUser(
       return { ok: false, error: 'exists' };
     }
     const passwordHash = await hash(input.password, 12);
-    await prisma.user.create({
+    const user = await prisma.user.create({
       data: {
         id: randomUUID(),
         name,
@@ -37,6 +38,7 @@ export async function createUser(
         password: passwordHash,
       },
     });
+    await ensureDefaultCategoriesForUser(user.id);
     return { ok: true };
   } catch (error) {
     console.error('createUser failed', error);
