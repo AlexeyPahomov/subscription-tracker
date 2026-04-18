@@ -2,6 +2,7 @@ import {
   nextPaymentCardShellClass,
   nextPaymentRelativeTextClass,
 } from '@/components/dashboard/urgency-classes';
+import { subscriptionDeepLinkHref } from '@/constants/subscriptionDeepLink';
 import { formatMoneyAmount } from '@/helpers/formatMoneyAmount';
 import type { UpcomingPaymentUrgency } from '@/helpers/getUpcomingPaymentsForUser';
 import Link from 'next/link';
@@ -77,7 +78,7 @@ export function DashboardSummary({
 
           {topSubscription && (
             <Link
-              href={`/subscriptions#subscription-${topSubscription.id}`}
+              href={subscriptionDeepLinkHref(topSubscription.id)}
               className="mt-8 block text-xs leading-relaxed text-gray-500 transition-colors hover:text-indigo-300"
             >
               <span className="text-gray-500">Top: </span>

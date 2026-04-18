@@ -9,6 +9,7 @@ import {
   TextInput,
 } from '@gravity-ui/uikit';
 import type { ChangeEvent, SubmitEvent } from 'react';
+import { CategoryPicker } from './category-picker';
 import { intervalSelectOptions } from './constants';
 import type { UserCategoryOption } from '@/helpers/getCategoriesByUserId';
 import type { SubscriptionFormValues } from './types';
@@ -22,7 +23,7 @@ type SubscriptionFormProps = {
   onSubmit: (event: SubmitEvent<HTMLFormElement>) => void | Promise<void>;
   onChange: (event: ChangeEvent<HTMLInputElement>) => void;
   onIntervalUpdate: (newValue: string[]) => void;
-  onCategoryUpdate: (newValue: string[]) => void;
+  onCategorySelect: (categoryId: string) => void;
   onNextPaymentDateUpdate: (value: DateTime | null) => void;
   errorMessage?: string | null;
   isSubmitting?: boolean;
@@ -37,19 +38,11 @@ export function SubscriptionForm({
   onSubmit,
   onChange,
   onIntervalUpdate,
-  onCategoryUpdate,
+  onCategorySelect,
   onNextPaymentDateUpdate,
   errorMessage,
   isSubmitting = false,
 }: SubscriptionFormProps) {
-  const categoryOptions = [
-    { value: '', content: 'No category' },
-    ...categories.map((c) => ({
-      value: c.id,
-      content: c.name,
-    })),
-  ];
-
   return (
     <Dialog open={open} size="m" onClose={onClose} hasCloseButton>
       <Dialog.Header caption={title} />
@@ -77,16 +70,16 @@ export function SubscriptionForm({
             value={[values.interval]}
             onUpdate={onIntervalUpdate}
           />
-          <Select
-            placeholder="Category"
-            options={categoryOptions}
-            value={[values.categoryId]}
-            onUpdate={onCategoryUpdate}
-          />
           <DatePicker
             placeholder="Select next payment date"
             value={values.nextPaymentDate}
             onUpdate={onNextPaymentDateUpdate}
+          />
+          <CategoryPicker
+            categories={categories}
+            value={values.categoryId}
+            onChange={onCategorySelect}
+            disabled={isSubmitting}
           />
 
           {errorMessage ? (

@@ -2,6 +2,9 @@
 
 import { PencilToSquare, TrashBin } from '@gravity-ui/icons';
 import { SubscriptionBrandAvatar } from '@/components/dashboard/subscription-brand-avatar';
+import { subscriptionDomId } from '@/constants/subscriptionDeepLink';
+import { getCategoryLucideIcon } from '@/helpers/categoryLucideIcon';
+import { createElement } from 'react';
 import type { SubscriptionCardDetailRow, SubscriptionCardProps } from './types';
 import { CardDetail, CardIconAction } from './ui';
 
@@ -28,7 +31,7 @@ export function SubscriptionCard({
 
   return (
     <article
-      id={`subscription-${subscriptionId}`}
+      id={subscriptionDomId(subscriptionId)}
       className="scroll-mt-24 rounded-xl border border-gray-800 bg-gray-950/50 p-5"
     >
       <div className="flex gap-4">
@@ -42,14 +45,13 @@ export function SubscriptionCard({
             <div className="min-w-0">
               <h3 className="text-xl font-semibold text-white">{name}</h3>
               {category ? (
-                <p className="mt-1.5 flex items-center gap-1.5 text-sm text-gray-400">
-                  <span
-                    className="h-2 w-2 shrink-0 rounded-full"
-                    style={{
-                      backgroundColor: category.color ?? '#6b7280',
-                    }}
-                    aria-hidden
-                  />
+                <p className="mt-1.5 flex items-center gap-2 text-sm text-gray-400">
+                  {createElement(getCategoryLucideIcon(category.icon, category.name), {
+                    className: 'h-4 w-4 shrink-0',
+                    strokeWidth: 2,
+                    style: { color: category.color ?? '#6b7280' },
+                    'aria-hidden': true,
+                  })}
                   <span>{category.name}</span>
                 </p>
               ) : null}

@@ -17,6 +17,7 @@ import {
 } from '@/components/subscriptions/ui/forms';
 import { useModal } from '@/hooks/useModal';
 import type { UserCategoryOption } from '@/helpers/getCategoriesByUserId';
+import { getDefaultSubscriptionCategoryId } from '@/helpers/getDefaultSubscriptionCategoryId';
 import { getSubscriptionActionErrorMessage } from '@/helpers/getSubscriptionActionErrorMessage';
 import { isIntervalValue } from '@/helpers/isIntervalValue';
 import type { Subscription } from '@/types/subscription';
@@ -61,6 +62,17 @@ export function useSubscriptions(
     setSubscriptions(initialSubscriptions);
   }, [initialSubscriptions]);
 
+  /** Пока открыто «Добавить»: если категории уже есть, а выбор пуст — ставим «Other». */
+  useEffect(() => {
+    if (!addEditModal.isOpen || editingId !== null) return;
+    const defaultId = getDefaultSubscriptionCategoryId(categoryOptions);
+    if (!defaultId) return;
+    setValues((prev) => {
+      if (prev.categoryId) return prev;
+      return { ...prev, categoryId: defaultId };
+    });
+  }, [addEditModal.isOpen, editingId, categoryOptions]);
+
   const isEmpty = subscriptions.length === 0;
 
   const dialogTitle =
@@ -78,7 +90,12 @@ export function useSubscriptions(
   }
 
   function openAddModal() {
-    resetFormModal();
+    setEditingId(null);
+    setFormError(null);
+    setValues({
+      ...initialSubscriptionFormValues,
+      categoryId: getDefaultSubscriptionCategoryId(categoryOptions),
+    });
     addEditModal.open();
   }
 
@@ -139,12 +156,8 @@ export function useSubscriptions(
     }));
   }
 
-  function handleCategoryUpdate(newValue: string[]) {
-    const nextValue = newValue[0];
-    setValues((prev) => ({
-      ...prev,
-      categoryId: nextValue ?? '',
-    }));
+  function handleCategorySelect(categoryId: string) {
+    setValues((prev) => ({ ...prev, categoryId }));
   }
 
   function handleNextPaymentDateUpdate(value: DateTime | null) {
@@ -159,6 +172,9 @@ export function useSubscriptions(
     const nextPaymentDateStr = nextPaymentDateDt.format(displayDateFormat);
     const name = values.name.trim();
     const price = values.price.trim();
+    const categoryId =
+      values.categoryId.trim() ||
+      getDefaultSubscriptionCategoryId(categoryOptions);
 
     setIsSubmitting(true);
     setFormError(null);
@@ -171,7 +187,7 @@ export function useSubscriptions(
           price,
           interval: values.interval,
           nextPaymentDate: nextPaymentDateStr,
-          categoryId: values.categoryId || null,
+          categoryId,
         });
         if (!result.ok) {
           setFormError(getSubscriptionActionErrorMessage(result.error));
@@ -186,7 +202,7 @@ export function useSubscriptions(
           price,
           interval: values.interval,
           nextPaymentDate: nextPaymentDateStr,
-          categoryId: values.categoryId || null,
+          categoryId,
         });
         if (!result.ok) {
           setFormError(getSubscriptionActionErrorMessage(result.error));
@@ -218,7 +234,7 @@ export function useSubscriptions(
       onSubmit: handleSubmit,
       onChange: handleChange,
       onIntervalUpdate: handleIntervalUpdate,
-      onCategoryUpdate: handleCategoryUpdate,
+      onCategorySelect: handleCategorySelect,
       onNextPaymentDateUpdate: handleNextPaymentDateUpdate,
       errorMessage: formError,
       isSubmitting,

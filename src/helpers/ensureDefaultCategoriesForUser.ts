@@ -11,7 +11,7 @@ export async function ensureDefaultCategoriesForUser(userId: string): Promise<vo
       userId,
       name: c.name,
       color: c.color,
-      icon: null,
+      icon: c.icon,
     })),
   });
 }

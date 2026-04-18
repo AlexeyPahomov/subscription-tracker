@@ -2,7 +2,9 @@ import {
   upcomingRelativeTextClass,
   upcomingRowBorderClass,
 } from '@/components/dashboard/urgency-classes';
+import { subscriptionDeepLinkHref } from '@/constants/subscriptionDeepLink';
 import type { UpcomingPaymentItem } from '@/helpers/getUpcomingPaymentsForUser';
+import Link from 'next/link';
 import { SubscriptionBrandAvatar } from './subscription-brand-avatar';
 
 type UpcomingItemProps = {
@@ -11,10 +13,15 @@ type UpcomingItemProps = {
 };
 
 export function UpcomingItem({ item, index }: UpcomingItemProps) {
+  const href = subscriptionDeepLinkHref(item.id);
+
   return (
-    <li
-      className={`rounded-xl border border-white/10 border-l-4 bg-black/30 transition-all duration-200 hover:border-white/25 hover:bg-white/10 hover:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.04),0_4px_24px_-8px_rgba(0,0,0,0.4)] ${upcomingRowBorderClass(item.urgency)}`}
-    >
+    <li>
+      <Link
+        href={href}
+        scroll={false}
+        className={`block cursor-pointer rounded-xl border border-white/10 border-l-4 bg-black/30 transition-all duration-200 hover:border-white/25 hover:bg-white/10 hover:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.04),0_4px_24px_-8px_rgba(0,0,0,0.4)] ${upcomingRowBorderClass(item.urgency)}`}
+      >
       <div className="md:hidden">
         <div className="flex items-center gap-3 px-4 pt-3.5">
           <SubscriptionBrandAvatar name={item.name} index={index} />
@@ -59,6 +66,7 @@ export function UpcomingItem({ item, index }: UpcomingItemProps) {
           {item.relativeLabel}
         </span>
       </div>
+      </Link>
     </li>
   );
 }

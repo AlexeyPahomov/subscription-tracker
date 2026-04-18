@@ -9,8 +9,8 @@ import {
   SubscriptionsList,
 } from '@/components/subscriptions/ui';
 import type { UserCategoryOption } from '@/helpers/getCategoriesByUserId';
+import { useScrollToSubscriptionFromHash } from '@/hooks/useScrollToSubscriptionFromHash';
 import type { Subscription } from '@/types/subscription';
-import { useEffect } from 'react';
 
 type SubscriptionsProps = {
   initialSubscriptions: Subscription[];
@@ -31,31 +31,7 @@ export function Subscriptions({
     deleteDialog,
   } = useSubscriptions(initialSubscriptions, categories);
 
-  useEffect(() => {
-    const raw = window.location.hash.replace(/^#/, '');
-    if (!raw.startsWith('subscription-')) return;
-
-    const run = () => {
-      const el = document.getElementById(raw);
-      if (!el) return false;
-      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      el.classList.add(
-        'ring-2',
-        'ring-indigo-500/60',
-        'transition-shadow',
-      );
-      window.setTimeout(() => {
-        el.classList.remove('ring-2', 'ring-indigo-500/60');
-      }, 2200);
-      return true;
-    };
-
-    requestAnimationFrame(() => {
-      if (!run()) {
-        window.setTimeout(run, 120);
-      }
-    });
-  }, []);
+  useScrollToSubscriptionFromHash(subscriptions);
 
   return (
     <section className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-4 py-10">
