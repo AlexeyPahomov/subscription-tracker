@@ -26,7 +26,7 @@ function formatCurrencyLeadingSymbol(price: number, currencyCode: string): strin
   return [...currencyParts, ...numberParts].map((p) => p.value).join('');
 }
 
-function formatPriceDisplay(price: number, currency: string): string {
+export function formatPriceForDisplay(price: number, currency: string): string {
   const code =
     currency.length === 3 ? currency : defaultSubscriptionCurrency;
   try {
@@ -40,7 +40,7 @@ export function formatSubscriptionForClient(row: DbSubscription): Subscription {
   return {
     id: row.id,
     name: row.name,
-    price: formatPriceDisplay(row.price, row.currency),
+    price: formatPriceForDisplay(row.price, row.currency),
     interval: normalizeInterval(row.interval),
     nextPaymentDate: formatDisplayDate(new Date(row.nextBilling)),
   };

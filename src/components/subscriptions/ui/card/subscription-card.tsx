@@ -1,14 +1,17 @@
 'use client';
 
 import { PencilToSquare, TrashBin } from '@gravity-ui/icons';
+import { SubscriptionBrandAvatar } from '@/components/dashboard/subscription-brand-avatar';
 import type { SubscriptionCardDetailRow, SubscriptionCardProps } from './types';
 import { CardDetail, CardIconAction } from './ui';
 
 export function SubscriptionCard({
+  subscriptionId,
   name,
   price,
   interval,
   nextPaymentDate,
+  brandIndex = 0,
   onEdit,
   onDelete,
 }: SubscriptionCardProps) {
@@ -23,27 +26,39 @@ export function SubscriptionCard({
   ];
 
   return (
-    <article className="rounded-xl border border-gray-800 bg-gray-950/50 p-5">
-      <div className="flex items-start justify-between gap-3">
-        <h3 className="text-xl font-semibold text-white">{name}</h3>
-        <div className="flex shrink-0 items-center gap-1">
-          <CardIconAction
-            icon={PencilToSquare}
-            label="Edit subscription"
-            onClick={onEdit}
-          />
-          <CardIconAction
-            icon={TrashBin}
-            label="Delete subscription"
-            onClick={onDelete}
-          />
+    <article
+      id={`subscription-${subscriptionId}`}
+      className="scroll-mt-24 rounded-xl border border-gray-800 bg-gray-950/50 p-5"
+    >
+      <div className="flex gap-4">
+        <SubscriptionBrandAvatar
+          name={name}
+          index={brandIndex}
+          className="h-11 w-11 text-sm"
+        />
+        <div className="min-w-0 flex-1">
+          <div className="flex items-start justify-between gap-3">
+            <h3 className="text-xl font-semibold text-white">{name}</h3>
+            <div className="flex shrink-0 items-center gap-1">
+              <CardIconAction
+                icon={PencilToSquare}
+                label="Edit subscription"
+                onClick={onEdit}
+              />
+              <CardIconAction
+                icon={TrashBin}
+                label="Delete subscription"
+                onClick={onDelete}
+              />
+            </div>
+          </div>
+          <dl className="mt-4 grid grid-cols-1 gap-3 text-sm text-gray-300 sm:grid-cols-3">
+            {detailRows.map(({ key, label, value }) => (
+              <CardDetail key={key} label={label} value={value} />
+            ))}
+          </dl>
         </div>
       </div>
-      <dl className="mt-4 grid grid-cols-1 gap-3 text-sm text-gray-300 sm:grid-cols-3">
-        {detailRows.map(({ key, label, value }) => (
-          <CardDetail key={key} label={label} value={value} />
-        ))}
-      </dl>
     </article>
   );
 }

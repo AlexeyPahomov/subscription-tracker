@@ -52,7 +52,7 @@ export function ProfileMenu({ name, email }: ProfileMenuProps) {
     <div className="relative" ref={menuRef}>
       <div onClick={toggle}>
         <User
-          className="max-w-[240px] cursor-pointer px-2 py-1"
+          className="max-w-60 cursor-pointer px-2 py-1"
           avatar={{ text: name, theme: 'brand' }}
           name={name}
           description={email}

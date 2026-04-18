@@ -30,7 +30,7 @@ export default function Header() {
             <NextLink
               href={href}
               key={href}
-              className={`text-[18px] transition-colors ${
+              className={`text-lg transition-colors ${
                 pathname === href
                   ? 'text-white'
                   : 'text-gray-300 hover:text-white'

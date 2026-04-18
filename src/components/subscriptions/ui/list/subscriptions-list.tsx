@@ -24,13 +24,15 @@ export function SubscriptionsList({
 }: SubscriptionsListProps) {
   return (
     <div className="grid grid-cols-1 gap-4">
-      {subscriptions.map((subscription) => (
+      {subscriptions.map((subscription, index) => (
         <SubscriptionCard
           key={subscription.id}
+          subscriptionId={subscription.id}
           name={subscription.name}
           price={subscription.price}
           interval={getIntervalLabel(subscription.interval)}
           nextPaymentDate={subscription.nextPaymentDate}
+          brandIndex={index}
           onEdit={() => onEdit(subscription)}
           onDelete={() => onDelete(subscription.id)}
         />
