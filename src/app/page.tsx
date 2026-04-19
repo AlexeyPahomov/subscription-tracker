@@ -1,13 +1,8 @@
-import { auth } from '@/auth';
 import { LandingPage } from '@/components/landing/landing-page';
-import { redirect } from 'next/navigation';
 
-export default async function HomePage() {
-  const session = await auth();
+/** Залогиненных с `/` уводит middleware — здесь только лендинг для гостей. */
+export const dynamic = 'force-dynamic';
 
-  if (session) {
-    redirect('/dashboard');
-  }
-
+export default function HomePage() {
   return <LandingPage />;
 }

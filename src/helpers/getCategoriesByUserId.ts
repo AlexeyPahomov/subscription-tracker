@@ -1,5 +1,6 @@
 import { ensureDefaultCategoriesForUser } from '@/helpers/ensureDefaultCategoriesForUser';
 import { prisma } from '@/utils/prisma';
+import { withDbRetry } from '@/utils/dbConnection';
 
 export type UserCategoryOption = {
   id: string;
@@ -25,10 +26,12 @@ export async function getCategoriesByUserId(
   userId: string,
 ): Promise<UserCategoryOption[]> {
   await ensureDefaultCategoriesForUser(userId);
-  const rows = await prisma.category.findMany({
-    where: { userId },
-    orderBy: { name: 'asc' },
-    select: { id: true, name: true, color: true, icon: true },
-  });
+  const rows = await withDbRetry(() =>
+    prisma.category.findMany({
+      where: { userId },
+      orderBy: { name: 'asc' },
+      select: { id: true, name: true, color: true, icon: true },
+    }),
+  );
   return sortCategoriesForUi(rows);
 }

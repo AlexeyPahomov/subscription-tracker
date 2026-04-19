@@ -9,13 +9,21 @@ import {
 import { buildDashboardViewModel } from '@/helpers/buildDashboardViewModel';
 import { getDashboardSpendAnalytics } from '@/helpers/getDashboardSpendAnalytics';
 import { getUpcomingPaymentsForUser } from '@/helpers/getUpcomingPaymentsForUser';
+import { prisma } from '@/utils/prisma';
+import { redirect } from 'next/navigation';
+
 export default async function DashboardPage() {
   const userId = await requireSessionUserInDb();
 
-  const [spendAnalytics, upcomingAll] = await Promise.all([
-    getDashboardSpendAnalytics(userId),
-    getUpcomingPaymentsForUser(userId),
-  ]);
+  const subscriptionCount = await prisma.subscription.count({
+    where: { userId },
+  });
+  if (subscriptionCount === 0) {
+    redirect('/subscriptions');
+  }
+
+  const spendAnalytics = await getDashboardSpendAnalytics(userId);
+  const upcomingAll = await getUpcomingPaymentsForUser(userId);
 
   const {
     analytics,

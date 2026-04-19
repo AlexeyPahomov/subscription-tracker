@@ -9,7 +9,8 @@ import type {
 import { getAuthenticatedUserId } from '@/helpers/getAuthenticatedUserId';
 import { resolveCategoryIdForUser } from '@/helpers/resolveCategoryIdForUser';
 import { defaultSubscriptionCurrency } from '@/constants';
-import { prisma } from '@/utils/prisma';
+import { ensureDatabaseConnection, prisma } from '@/utils/prisma';
+import { withDbRetry, withMutationPoolRecovery } from '@/utils/dbConnection';
 
 type UpdateSubscriptionInput = CreateSubscriptionInput & {
   id: string;
@@ -18,6 +19,8 @@ type UpdateSubscriptionInput = CreateSubscriptionInput & {
 export async function updateSubscription(
   input: UpdateSubscriptionInput,
 ): Promise<SubscriptionWriteResult> {
+  await ensureDatabaseConnection();
+
   const authResult = await getAuthenticatedUserId();
   if (!authResult.ok) return authResult;
 
@@ -29,35 +32,40 @@ export async function updateSubscription(
   const { name, price, interval, nextBilling } = parsed;
   const { userId } = authResult;
 
-  const categoryResolved = await resolveCategoryIdForUser(userId, input.categoryId);
-  if (!categoryResolved.ok) {
-    return { ok: false, error: 'validation' };
-  }
-
   try {
-    const updated = await prisma.subscription.updateMany({
-      where: { id: input.id, userId },
-      data: {
-        name,
-        price,
-        currency: defaultSubscriptionCurrency,
-        interval,
-        nextBilling,
-        categoryId: categoryResolved.categoryId,
-      },
-    });
+    const categoryResolved = await resolveCategoryIdForUser(userId, input.categoryId);
+    if (!categoryResolved.ok) {
+      return { ok: false, error: 'validation' };
+    }
+
+    const updated = await withMutationPoolRecovery(() =>
+      prisma.subscription.updateMany({
+        where: { id: input.id, userId },
+        data: {
+          name,
+          price,
+          currency: defaultSubscriptionCurrency,
+          interval,
+          nextBilling,
+          categoryId: categoryResolved.categoryId,
+        },
+      }),
+    );
 
     if (updated.count === 0) {
       return { ok: false, error: 'not_found' };
     }
 
-    const row = await prisma.subscription.findUniqueOrThrow({
-      where: { id: input.id },
-      include: { category: true },
-    });
+    const row = await withDbRetry(() =>
+      prisma.subscription.findUniqueOrThrow({
+        where: { id: input.id },
+        include: { category: true },
+      }),
+    );
 
     return { ok: true, subscription: formatSubscriptionForClient(row) };
-  } catch {
+  } catch (err) {
+    console.error('[updateSubscription]', err);
     return { ok: false, error: 'unknown' };
   }
 }

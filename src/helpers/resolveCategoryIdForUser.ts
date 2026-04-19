@@ -1,4 +1,5 @@
 import { prisma } from '@/utils/prisma';
+import { withDbRetry } from '@/utils/dbConnection';
 
 /** Проверяет, что categoryId принадлежит пользователю. Пустое значение → null. */
 export async function resolveCategoryIdForUser(
@@ -9,10 +10,12 @@ export async function resolveCategoryIdForUser(
   if (!trimmed) {
     return { ok: true, categoryId: null };
   }
-  const found = await prisma.category.findFirst({
-    where: { id: trimmed, userId },
-    select: { id: true },
-  });
+  const found = await withDbRetry(() =>
+    prisma.category.findFirst({
+      where: { id: trimmed, userId },
+      select: { id: true },
+    }),
+  );
   if (!found) {
     return { ok: false };
   }

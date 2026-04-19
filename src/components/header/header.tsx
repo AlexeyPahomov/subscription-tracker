@@ -20,15 +20,20 @@ export default function Header() {
       style={{ height: layoutConfig.headerHeight }}
     >
       <div className="container mx-auto grid h-16 grid-cols-[1fr_auto_1fr] items-center px-4">
-        <NextLink href="/" className="justify-self-start text-xl font-bold text-white">
+        <NextLink
+          href={status === 'authenticated' ? '/dashboard' : '/'}
+          prefetch={false}
+          className="justify-self-start text-xl font-bold text-white"
+        >
           {appConfig.title}
         </NextLink>
 
-        {/* Навигация */}
+        {/* Навигация — prefetch off: иначе в dev сыплются фоновые RSC-запросы к каждому маршруту */}
         <nav className="hidden items-center gap-6 justify-self-center md:flex">
           {appConfig.navigation.map(({ title, href }) => (
             <NextLink
               href={href}
+              prefetch={false}
               key={href}
               className={`text-lg transition-colors ${
                 pathname === href

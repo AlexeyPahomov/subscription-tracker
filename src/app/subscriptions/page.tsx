@@ -6,10 +6,9 @@ import { getSubscriptionsByUserId } from '@/helpers/getSubscriptionsByUserId';
 export default async function SubscriptionsPage() {
   const userId = await requireSessionUserInDb();
 
-  const [initialSubscriptions, categories] = await Promise.all([
-    getSubscriptionsByUserId(userId),
-    getCategoriesByUserId(userId),
-  ]);
+  // Пул к Supabase с max:1 — параллельно два findMany конкурируют за одно соединение и дают timeout.
+  const initialSubscriptions = await getSubscriptionsByUserId(userId);
+  const categories = await getCategoriesByUserId(userId);
 
   return (
     <Subscriptions
