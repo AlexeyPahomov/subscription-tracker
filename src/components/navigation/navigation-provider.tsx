@@ -1,5 +1,6 @@
 'use client';
 
+import { layoutConfig } from '@/config/layout.config';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
@@ -48,7 +49,8 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
       {children}
       {loading ? (
         <div
-          className="fixed inset-0 z-200 flex items-center justify-center bg-(--background)/88 backdrop-blur-sm motion-safe:animate-[nav-overlay-in_0.2s_ease-out]"
+          className="fixed right-0 bottom-0 left-0 z-40 flex items-center justify-center bg-(--background)/88 backdrop-blur-sm motion-safe:animate-[nav-overlay-in_0.2s_ease-out]"
+          style={{ top: layoutConfig.headerHeight }}
           role="status"
           aria-live="polite"
           aria-label="Загрузка страницы"
