@@ -9,10 +9,21 @@ import NextLink from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 
+/** Иначе на проде бывает status=authenticated при пустом/битом JWT (старый cookie, другой секрет). */
+function hasUsableSession(
+  status: ReturnType<typeof useSession>['status'],
+  session: ReturnType<typeof useSession>['data'],
+): boolean {
+  if (status !== 'authenticated' || !session?.user) return false;
+  const { id, email, name } = session.user;
+  return Boolean(id && (email || name));
+}
+
 export default function Header() {
   const { openLogin, openRegister } = useAuthModals();
   const { data: session, status } = useSession();
   const pathname = usePathname();
+  const showAccount = hasUsableSession(status, session);
 
   return (
     <header
@@ -21,7 +32,7 @@ export default function Header() {
     >
       <div className="container mx-auto grid h-16 grid-cols-[1fr_auto_1fr] items-center px-4">
         <NextLink
-          href={status === 'authenticated' ? '/dashboard' : '/'}
+          href={showAccount ? '/dashboard' : '/'}
           prefetch={false}
           className="justify-self-start text-xl font-bold text-white"
         >
@@ -50,10 +61,10 @@ export default function Header() {
         <div className="hidden items-center gap-3 justify-self-end md:flex">
           {status === 'loading' ? (
             <div className="h-9 w-32" aria-hidden="true" />
-          ) : status === 'authenticated' ? (
+          ) : showAccount ? (
             <ProfileMenu
-              name={session.user?.name ?? session.user?.email ?? ''}
-              email={session.user?.email ?? ''}
+              name={session?.user?.name ?? session?.user?.email ?? ''}
+              email={session?.user?.email ?? ''}
             />
           ) : (
             <>
