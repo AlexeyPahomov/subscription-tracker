@@ -24,13 +24,18 @@ export default function Header() {
   const { data: session, status } = useSession();
   const pathname = usePathname();
   const showAccount = hasUsableSession(status, session);
+  const isLanding = pathname === '/';
 
   return (
     <header
       className="sticky top-0 z-50 w-full border-b border-gray-800 bg-black/80 backdrop-blur-lg"
       style={{ height: layoutConfig.headerHeight }}
     >
-      <div className="container mx-auto grid h-16 grid-cols-[1fr_auto_1fr] items-center px-4">
+      <div
+        className={`container mx-auto grid h-16 items-center px-4 ${
+          isLanding ? 'grid-cols-[1fr_auto]' : 'grid-cols-[1fr_auto_1fr]'
+        }`}
+      >
         <AppLink
           href={showAccount ? '/dashboard' : '/'}
           prefetch={false}
@@ -39,23 +44,25 @@ export default function Header() {
           {appConfig.title}
         </AppLink>
 
-        {/* Навигация — prefetch off: иначе в dev сыплются фоновые RSC-запросы к каждому маршруту */}
-        <nav className="hidden items-center gap-6 justify-self-center md:flex">
-          {appConfig.navigation.map(({ title, href }) => (
-            <AppLink
-              href={href}
-              prefetch={false}
-              key={href}
-              className={`text-lg transition-colors duration-200 ${
-                pathname === href
-                  ? 'text-white'
-                  : 'text-gray-300 hover:text-white'
-              }`}
-            >
-              {title}
-            </AppLink>
-          ))}
-        </nav>
+        {/* На лендинге меню скрыто; prefetch off — меньше фоновых RSC в dev */}
+        {!isLanding ? (
+          <nav className="hidden items-center gap-6 justify-self-center md:flex">
+            {appConfig.navigation.map(({ title, href }) => (
+              <AppLink
+                href={href}
+                prefetch={false}
+                key={href}
+                className={`text-lg transition-colors duration-200 ${
+                  pathname === href
+                    ? 'text-white'
+                    : 'text-gray-300 hover:text-white'
+                }`}
+              >
+                {title}
+              </AppLink>
+            ))}
+          </nav>
+        ) : null}
 
         {/* Вход / профиль */}
         <div className="hidden items-center gap-3 justify-self-end md:flex">
