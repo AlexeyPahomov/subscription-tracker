@@ -25,7 +25,7 @@ export default function Header() {
 
   return (
     <header
-      className="sticky top-0 z-50 w-full border-b border-gray-800 bg-black/80 backdrop-blur-lg"
+      className="sticky top-0 z-50 w-full border-b border-neutral-200 bg-white/90 backdrop-blur-lg dark:border-gray-800 dark:bg-black/80"
       style={{ height: layoutConfig.headerHeight }}
     >
       <div
@@ -36,7 +36,7 @@ export default function Header() {
         <AppLink
           href={showAccount ? '/dashboard' : '/'}
           prefetch={false}
-          className="justify-self-start text-xl font-bold text-white"
+          className="justify-self-start text-xl font-bold text-neutral-900 dark:text-white"
         >
           {appConfig.title}
         </AppLink>
@@ -51,8 +51,8 @@ export default function Header() {
                 key={href}
                 className={`text-lg transition-colors duration-200 ${
                   pathname === href
-                    ? 'text-white'
-                    : 'text-gray-300 hover:text-white'
+                    ? 'text-indigo-700 dark:text-white'
+                    : 'text-neutral-600 hover:text-neutral-900 dark:text-gray-300 dark:hover:text-white'
                 }`}
               >
                 {title}
@@ -61,8 +61,8 @@ export default function Header() {
           </nav>
         ) : null}
 
-        {/* Профиль при входе; гостям — пусто (вход с лендинга через Get Started) */}
-        <div className="hidden items-center justify-self-end md:flex">
+        {/* Профиль; гостям — пусто */}
+        <div className="flex items-center justify-self-end gap-2 sm:gap-3">
           {status === 'loading' ? (
             <div className="h-9 w-32" aria-hidden="true" />
           ) : showAccount ? (

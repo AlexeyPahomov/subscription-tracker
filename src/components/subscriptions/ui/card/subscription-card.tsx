@@ -32,7 +32,7 @@ export function SubscriptionCard({
   return (
     <article
       id={subscriptionDomId(subscriptionId)}
-      className="scroll-mt-24 rounded-xl border border-gray-800 bg-gray-950/50 p-5"
+      className="scroll-mt-24 rounded-xl border border-neutral-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-gray-950/50 dark:shadow-none"
     >
       <div className="flex gap-4">
         <SubscriptionBrandAvatar
@@ -43,13 +43,15 @@ export function SubscriptionCard({
         <div className="min-w-0 flex-1">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
-              <h3 className="text-xl font-semibold text-white">{name}</h3>
+              <h3 className="text-xl font-semibold text-neutral-900 dark:text-white">
+                {name}
+              </h3>
               {category ? (
-                <p className="mt-1.5 flex items-center gap-2 text-sm text-gray-400">
+                <p className="mt-1.5 flex items-center gap-2 text-sm font-medium text-neutral-800 dark:text-gray-400">
                   {createElement(getCategoryLucideIcon(category.icon, category.name), {
                     className: 'h-4 w-4 shrink-0',
                     strokeWidth: 2,
-                    style: { color: category.color ?? '#6b7280' },
+                    style: { color: category.color ?? '#4b5563' },
                     'aria-hidden': true,
                   })}
                   <span>{category.name}</span>
@@ -69,7 +71,7 @@ export function SubscriptionCard({
               />
             </div>
           </div>
-          <dl className="mt-4 grid grid-cols-1 gap-3 text-sm text-gray-300 sm:grid-cols-3">
+          <dl className="mt-4 grid grid-cols-1 gap-3 text-sm sm:grid-cols-3">
             {detailRows.map(({ key, label, value }) => (
               <CardDetail key={key} label={label} value={value} />
             ))}

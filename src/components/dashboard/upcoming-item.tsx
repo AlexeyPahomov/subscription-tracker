@@ -20,18 +20,22 @@ export function UpcomingItem({ item, index }: UpcomingItemProps) {
       <AppLink
         href={href}
         scroll={false}
-        className={`block cursor-pointer rounded-xl border border-white/10 border-l-4 bg-black/30 transition-all duration-200 hover:border-white/25 hover:bg-white/10 hover:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.04),0_4px_24px_-8px_rgba(0,0,0,0.4)] ${upcomingRowBorderClass(item.urgency)}`}
+        className={`block cursor-pointer rounded-xl border border-l-4 border-neutral-200/90 bg-neutral-50/95 transition-all duration-200 hover:border-neutral-300 hover:bg-neutral-100/95 hover:shadow-[inset_0_0_0_1px_rgba(0,0,0,0.04),0_4px_24px_-8px_rgba(0,0,0,0.08)] dark:border-white/10 dark:bg-black/30 dark:hover:border-white/25 dark:hover:bg-white/10 dark:hover:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.04),0_4px_24px_-8px_rgba(0,0,0,0.4)] ${upcomingRowBorderClass(item.urgency)}`}
       >
       <div className="md:hidden">
         <div className="flex items-center gap-3 px-4 pt-3.5">
           <SubscriptionBrandAvatar name={item.name} index={index} />
-          <span className="min-w-0 flex-1 truncate font-semibold text-white">
+          <span className="min-w-0 flex-1 truncate font-semibold text-neutral-900 dark:text-white">
             {item.name}
           </span>
         </div>
         <div className="grid grid-cols-3 gap-2 px-4 pb-3.5 pt-2 text-xs tabular-nums sm:text-sm">
-          <span className="text-gray-100">{item.priceLabel}</span>
-          <span className="text-center text-gray-300">{item.dateLabel}</span>
+          <span className="text-neutral-800 dark:text-gray-100">
+            {item.priceLabel}
+          </span>
+          <span className="text-center text-neutral-600 dark:text-gray-300">
+            {item.dateLabel}
+          </span>
           <span
             className={`text-right ${upcomingRelativeTextClass(item.urgency)}`}
           >
@@ -48,15 +52,15 @@ export function UpcomingItem({ item, index }: UpcomingItemProps) {
       >
         <SubscriptionBrandAvatar name={item.name} index={index} />
 
-        <span className="min-w-0 truncate font-semibold text-white">
+        <span className="min-w-0 truncate font-semibold text-neutral-900 dark:text-white">
           {item.name}
         </span>
 
-        <span className="justify-self-end tabular-nums text-gray-100">
+        <span className="justify-self-end tabular-nums text-neutral-800 dark:text-gray-100">
           {item.priceLabel}
         </span>
 
-        <span className="justify-self-end tabular-nums text-gray-300">
+        <span className="justify-self-end tabular-nums text-neutral-600 dark:text-gray-300">
           {item.dateLabel}
         </span>
 

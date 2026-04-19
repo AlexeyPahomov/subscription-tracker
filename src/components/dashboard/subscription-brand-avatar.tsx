@@ -7,11 +7,11 @@ import {
 import { useState } from 'react';
 
 const ACCENT_BG = [
-  'bg-indigo-500/25 text-indigo-200',
-  'bg-emerald-500/25 text-emerald-200',
-  'bg-amber-500/25 text-amber-200',
-  'bg-fuchsia-500/25 text-fuchsia-200',
-  'bg-sky-500/25 text-sky-200',
+  'bg-indigo-100 text-indigo-800 dark:bg-indigo-500/25 dark:text-indigo-200',
+  'bg-emerald-100 text-emerald-800 dark:bg-emerald-500/25 dark:text-emerald-200',
+  'bg-amber-100 text-amber-800 dark:bg-amber-500/25 dark:text-amber-200',
+  'bg-fuchsia-100 text-fuchsia-800 dark:bg-fuchsia-500/25 dark:text-fuchsia-200',
+  'bg-sky-100 text-sky-800 dark:bg-sky-500/25 dark:text-sky-200',
 ];
 
 type SubscriptionBrandAvatarProps = {
@@ -43,7 +43,7 @@ export function SubscriptionBrandAvatar({
 
   return (
     <div
-      className={`relative flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-white p-1.5 ring-1 ring-white/15 ${className}`}
+      className={`relative flex shrink-0 items-center justify-center overflow-hidden rounded-full bg-white p-1.5 ring-1 ring-neutral-200 dark:ring-white/15 ${className}`}
     >
       {/* eslint-disable-next-line @next/next/no-img-element -- внешний SVG с CDN, fallback через onError */}
       <img

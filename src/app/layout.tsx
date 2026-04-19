@@ -9,8 +9,9 @@ import { GravityThemeProvider } from '@/components/gravity-theme-provider/gravit
 import { AuthModalsProvider } from '@/components/auth/auth-modals-provider';
 import { AuthSessionProvider } from '@/components/auth/auth-session-provider';
 import { NavigationProvider } from '@/components/navigation/navigation-provider';
+import { ThemePreferenceProvider } from '@/components/theme/theme-preference-provider';
 import Header from '@/components/header/header';
-import { gravitySystemThemeInlineScript } from '@/config/gravity-system-theme-script';
+import { resolveTheme } from '@/config/theme-preference';
 import { layoutConfig } from '@/config/layout.config';
 import { appConfig } from '@/config/app.config';
 import { auth } from '@/auth';
@@ -37,39 +38,41 @@ export default async function RootLayout({
 }>) {
   const session = await auth();
   const headerList = await headers();
+  /** Без чтения cookie темы: иначе Next.js при каждом изменении cookie перезапрашивает RSC и возможен цикл перезагрузок */
   const clientHintTheme = headerList.get('sec-ch-prefers-color-scheme');
-  const ssrTheme =
-    clientHintTheme === 'dark'
-      ? 'dark'
-      : clientHintTheme === 'light'
-        ? 'light'
-        : 'light';
-  const gravityBodyClassName = getRootClassName({ theme: ssrTheme });
+  const systemIsDark = clientHintTheme === 'dark';
+  const initialResolved = resolveTheme('system', systemIsDark);
+
+  const gravityBodyClassName = getRootClassName({ theme: initialResolved });
+
+  const htmlClassName = [
+    geistSans.variable,
+    geistMono.variable,
+    'h-full antialiased',
+    initialResolved === 'dark' ? 'dark' : '',
+  ]
+    .filter(Boolean)
+    .join(' ');
 
   return (
-    <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
+    <html lang="en" className={htmlClassName} suppressHydrationWarning>
       <body
         suppressHydrationWarning
         className={gravityBodyClassName}
         style={{ height: `calc(100vh - ${layoutConfig.headerHeight})` }}
       >
-        <script
-          // До гидрации выставляет тему по prefers-color-scheme, если SSR не угадал
-          dangerouslySetInnerHTML={{ __html: gravitySystemThemeInlineScript }}
-        />
-        <GravityThemeProvider>
-          <AuthSessionProvider session={session}>
-            <NavigationProvider>
-              <AuthModalsProvider>
-                <Header />
-                <main className="flex h-full min-h-0 flex-col">{children}</main>
-              </AuthModalsProvider>
-            </NavigationProvider>
-          </AuthSessionProvider>
-        </GravityThemeProvider>
+        <ThemePreferenceProvider initialResolved={initialResolved}>
+          <GravityThemeProvider>
+            <AuthSessionProvider session={session}>
+              <NavigationProvider>
+                <AuthModalsProvider>
+                  <Header />
+                  <main className="flex h-full min-h-0 flex-col">{children}</main>
+                </AuthModalsProvider>
+              </NavigationProvider>
+            </AuthSessionProvider>
+          </GravityThemeProvider>
+        </ThemePreferenceProvider>
       </body>
     </html>
   );

@@ -53,8 +53,12 @@ export function SubscriptionSpendPieChart({
     <div className={dashboardPieChartCardClassName}>
       <div className="mb-3 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div className="min-w-0">
-          <h3 className="text-base font-semibold text-white">{copy.title}</h3>
-          <p className="mt-0.5 text-xs text-gray-400">{copy.subtitle}</p>
+          <h3 className="text-base font-semibold text-neutral-900 dark:text-white">
+            {copy.title}
+          </h3>
+          <p className="mt-0.5 text-xs text-neutral-600 dark:text-gray-400">
+            {copy.subtitle}
+          </p>
         </div>
         <div className="flex shrink-0 flex-wrap items-center gap-2 sm:justify-end">
           <PieModeToggle mode={mode} onModeChange={setMode} />
@@ -65,7 +69,7 @@ export function SubscriptionSpendPieChart({
       </div>
 
       {!hasData ? (
-        <p className="py-12 text-center text-sm text-gray-400">
+        <p className="py-12 text-center text-sm text-neutral-600 dark:text-gray-400">
           Add subscriptions to see how your spend is distributed.
         </p>
       ) : (

@@ -64,7 +64,7 @@ export function ProfileMenu({ name, email }: ProfileMenuProps) {
       </div>
 
       <div
-        className={`absolute right-0 top-[calc(100%+8px)] z-50 flex w-24 origin-top-right flex-col rounded-md border border-gray-800 bg-gray-900 p-1 shadow-xl transition-all duration-200 ease-out ${
+        className={`absolute right-0 top-[calc(100%+8px)] z-50 flex w-24 origin-top-right flex-col rounded-md border border-neutral-200 bg-white p-1 shadow-xl transition-all duration-200 ease-out dark:border-gray-800 dark:bg-gray-900 ${
           isOpen
             ? 'pointer-events-auto translate-y-0 scale-100 opacity-100'
             : 'pointer-events-none -translate-y-1 scale-95 opacity-0'
@@ -80,16 +80,19 @@ export function ProfileMenu({ name, email }: ProfileMenuProps) {
             beginNavigation();
             handleEditProfileClick();
           }}
-          className="!justify-start"
+          className="justify-start!"
         >
           Edit profile
         </Button>
-        <div className="my-1 h-px w-full bg-gray-800" aria-hidden="true" />
+        <div
+          className="my-1 h-px w-full bg-neutral-200 dark:bg-gray-800"
+          aria-hidden="true"
+        />
         <Button
           view="flat"
           width="auto"
           onClick={handleSignOutClick}
-          className="!justify-start"
+          className="justify-start!"
         >
           Sign out
         </Button>

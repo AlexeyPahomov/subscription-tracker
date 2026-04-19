@@ -1,23 +1,18 @@
 'use client';
 
+import { useThemePreference } from '@/components/theme/theme-preference-provider';
 import { ThemeProvider, configure } from '@gravity-ui/uikit';
 import { settings } from '@gravity-ui/date-utils';
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, type ReactNode } from 'react';
 
 configure({ lang: 'ru' });
 
 export function GravityThemeProvider({ children }: { children: ReactNode }) {
-  const [isReady, setIsReady] = useState(false);
+  const { resolvedTheme } = useThemePreference();
 
   useEffect(() => {
-    settings.loadLocale('ru').then(() => {
-      setIsReady(true);
-    });
+    void settings.loadLocale('ru');
   }, []);
 
-  if (!isReady) {
-    return null;
-  }
-
-  return <ThemeProvider theme="system">{children}</ThemeProvider>;
+  return <ThemeProvider theme={resolvedTheme}>{children}</ThemeProvider>;
 }

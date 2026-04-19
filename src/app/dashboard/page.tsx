@@ -52,7 +52,7 @@ export default async function DashboardPage() {
       <section aria-labelledby="charts-heading" className="mt-0">
         <h2
           id="charts-heading"
-          className="mb-3 text-lg font-semibold text-white"
+          className="mb-3 text-lg font-semibold text-neutral-900 dark:text-white"
         >
           Charts
         </h2>

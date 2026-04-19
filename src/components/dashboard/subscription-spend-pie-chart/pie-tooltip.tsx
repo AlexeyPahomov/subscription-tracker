@@ -17,12 +17,12 @@ export function PieTooltipContent({
   if (!p) return null;
 
   return (
-    <div className="rounded-lg border border-white/15 bg-neutral-950/95 px-3 py-2.5 shadow-lg">
-      <p className="font-medium text-white">{p.name}</p>
-      <p className="mt-1 text-sm text-indigo-300 tabular-nums">
+    <div className="rounded-lg border border-neutral-200 bg-white px-3 py-2.5 shadow-lg dark:border-white/15 dark:bg-neutral-950/95">
+      <p className="font-medium text-neutral-900 dark:text-white">{p.name}</p>
+      <p className="mt-1 text-sm tabular-nums text-indigo-700 dark:text-indigo-300">
         {formatMoneyAmount(p.monthlyAmount, currencyCode)}
       </p>
-      <p className="mt-0.5 text-sm text-gray-400 tabular-nums">
+      <p className="mt-0.5 text-sm tabular-nums text-neutral-600 dark:text-gray-400">
         {p.percent.toFixed(1)}% of total
       </p>
     </div>

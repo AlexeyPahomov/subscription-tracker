@@ -23,13 +23,13 @@ export function SubscriptionDeleteConfirmDialog({
     <Dialog open={open} size="s" onClose={onCancel} hasCloseButton>
       <Dialog.Header caption="Delete subscription" />
       <Dialog.Body className="flex flex-col gap-4 pt-2">
-        <p className="text-sm text-gray-300">
+        <p className="text-sm text-neutral-700 dark:text-gray-300">
           {`Are you sure you want to delete “${subscriptionName}”?`}
           <br />
           This action cannot be undone.
         </p>
         {errorMessage ? (
-          <p className="text-sm text-red-400" role="alert">
+          <p className="text-sm text-red-600 dark:text-red-400" role="alert">
             {errorMessage}
           </p>
         ) : null}

@@ -19,7 +19,7 @@ export function CategoryPicker({
 }: CategoryPickerProps) {
   if (categories.length === 0) {
     return (
-      <p className="text-xs text-gray-500">
+      <p className="text-xs text-neutral-600 dark:text-gray-500">
         No categories yet. Open this page again to create defaults.
       </p>
     );
@@ -27,7 +27,9 @@ export function CategoryPicker({
 
   return (
     <div className="flex flex-col gap-1.5">
-      <span className="text-xs text-gray-400">Category</span>
+      <span className="text-xs text-neutral-600 dark:text-gray-400">
+        Category
+      </span>
       <div
         className="grid grid-cols-2 gap-1.5 sm:grid-cols-3"
         role="radiogroup"
@@ -47,8 +49,8 @@ export function CategoryPicker({
               onClick={() => onChange(cat.id)}
               className={`flex min-h-0 cursor-pointer items-center gap-1.5 rounded-lg border-2 px-2 py-1.5 text-left text-xs transition-all duration-200 ease-out disabled:cursor-not-allowed disabled:opacity-50 ${
                 selected
-                  ? 'scale-[1.02] bg-white/[0.07]'
-                  : 'border-white/10 bg-white/2 hover:scale-[1.02] hover:bg-white/5'
+                  ? 'scale-[1.02] bg-neutral-50 dark:bg-white/[0.07]'
+                  : 'border-neutral-200 bg-white hover:scale-[1.02] hover:bg-neutral-50 dark:border-white/10 dark:bg-white/2 dark:hover:bg-white/5'
               }`}
               style={{
                 borderColor: selected ? accent : undefined,
@@ -63,7 +65,7 @@ export function CategoryPicker({
                 style: { color: accent },
                 'aria-hidden': true,
               })}
-              <span className="min-w-0 flex-1 truncate font-medium leading-tight text-white">
+              <span className="min-w-0 flex-1 truncate font-medium leading-tight text-neutral-900 dark:text-white">
                 {cat.name}
               </span>
             </button>

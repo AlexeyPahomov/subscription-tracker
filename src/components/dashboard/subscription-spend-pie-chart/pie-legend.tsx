@@ -23,10 +23,10 @@ export function PieLegendList({ data, legendLabel }: PieLegendListProps) {
             style={{ backgroundColor: pieSliceFillColor(slice, i) }}
             aria-hidden
           />
-          <span className="min-w-0 flex-1 truncate text-gray-400">
+          <span className="min-w-0 flex-1 truncate text-neutral-600 dark:text-gray-400">
             {slice.name}
           </span>
-          <span className="shrink-0 tabular-nums text-gray-500">
+          <span className="shrink-0 tabular-nums text-neutral-700 dark:text-gray-500">
             {Math.round(slice.percent)}%
           </span>
         </li>
