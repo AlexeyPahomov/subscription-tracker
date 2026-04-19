@@ -1,4 +1,4 @@
-import { auth } from '@/auth';
+import { requireSessionUserInDb } from '@/helpers/getAuthenticatedUserId';
 import { DASHBOARD_PAGE_SHELL_CLASSNAME } from '@/constants/dashboard-layout';
 import {
   DashboardSummary,
@@ -9,15 +9,8 @@ import {
 import { buildDashboardViewModel } from '@/helpers/buildDashboardViewModel';
 import { getDashboardSpendAnalytics } from '@/helpers/getDashboardSpendAnalytics';
 import { getUpcomingPaymentsForUser } from '@/helpers/getUpcomingPaymentsForUser';
-import { redirect } from 'next/navigation';
-
 export default async function DashboardPage() {
-  const session = await auth();
-  const userId = session?.user?.id;
-
-  if (!userId) {
-    redirect('/');
-  }
+  const userId = await requireSessionUserInDb();
 
   const [spendAnalytics, upcomingAll] = await Promise.all([
     getDashboardSpendAnalytics(userId),

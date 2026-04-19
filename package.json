@@ -1,5 +1,4 @@
-{
-  "name": "subscription-tracker",
+{  "name": "subscription-tracker",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -7,6 +6,7 @@
     "dev:turbo": "next dev",
     "build": "next build",
     "start": "next start",
+    "postinstall": "prisma generate",
     "lint": "eslint"
   },
   "dependencies": {

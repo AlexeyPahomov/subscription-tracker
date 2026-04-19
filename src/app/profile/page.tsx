@@ -1,11 +1,13 @@
 import { auth } from '@/auth';
 import { Profile } from '@/components/profile/profile';
+import { requireSessionUserInDb } from '@/helpers/getAuthenticatedUserId';
 import { redirect } from 'next/navigation';
 
 export default async function ProfilePage() {
+  await requireSessionUserInDb();
   const session = await auth();
 
-  if (!session?.user?.id || !session.user.email) {
+  if (!session?.user?.email) {
     redirect('/');
   }
 

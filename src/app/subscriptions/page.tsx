@@ -1,16 +1,10 @@
-import { auth } from '@/auth';
 import { Subscriptions } from '@/components/subscriptions/subscriptions';
+import { requireSessionUserInDb } from '@/helpers/getAuthenticatedUserId';
 import { getCategoriesByUserId } from '@/helpers/getCategoriesByUserId';
 import { getSubscriptionsByUserId } from '@/helpers/getSubscriptionsByUserId';
-import { redirect } from 'next/navigation';
 
 export default async function SubscriptionsPage() {
-  const session = await auth();
-  const userId = session?.user?.id;
-
-  if (!userId) {
-    redirect('/');
-  }
+  const userId = await requireSessionUserInDb();
 
   const [initialSubscriptions, categories] = await Promise.all([
     getSubscriptionsByUserId(userId),
