@@ -1,10 +1,8 @@
 'use client';
 
-import { useAuthModals } from '@/components/auth/auth-modals-provider';
 import { ProfileMenu } from '@/components/header/profile-menu';
 import { appConfig } from '@/config/app.config';
 import { layoutConfig } from '@/config/layout.config';
-import { Button } from '@gravity-ui/uikit';
 import { AppLink } from '@/components/navigation/navigation-provider';
 import { usePathname } from 'next/navigation';
 import { useSession } from 'next-auth/react';
@@ -20,7 +18,6 @@ function hasUsableSession(
 }
 
 export default function Header() {
-  const { openLogin, openRegister } = useAuthModals();
   const { data: session, status } = useSession();
   const pathname = usePathname();
   const showAccount = hasUsableSession(status, session);
@@ -64,8 +61,8 @@ export default function Header() {
           </nav>
         ) : null}
 
-        {/* Вход / профиль */}
-        <div className="hidden items-center gap-3 justify-self-end md:flex">
+        {/* Профиль при входе; гостям — пусто (вход с лендинга через Get Started) */}
+        <div className="hidden items-center justify-self-end md:flex">
           {status === 'loading' ? (
             <div className="h-9 w-32" aria-hidden="true" />
           ) : showAccount ? (
@@ -73,16 +70,7 @@ export default function Header() {
               name={session?.user?.name ?? session?.user?.email ?? ''}
               email={session?.user?.email ?? ''}
             />
-          ) : (
-            <>
-              <Button view="outlined" onClick={openLogin}>
-                Sign in
-              </Button>
-              <Button view="action" onClick={openRegister}>
-                Sign Up
-              </Button>
-            </>
-          )}
+          ) : null}
         </div>
       </div>
     </header>

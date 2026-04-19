@@ -4,7 +4,7 @@ import { useAuthModals } from '@/components/auth/auth-modals-provider';
 import { Button } from '@gravity-ui/uikit';
 
 export function LandingPage() {
-  const { openRegister } = useAuthModals();
+  const { openGetStarted } = useAuthModals();
 
   return (
     <section className="flex flex-col items-center justify-center gap-8 py-20">
@@ -15,7 +15,7 @@ export function LandingPage() {
         Manage all your recurring payments in one place. <br />
         Get insights, alerts, and never miss a due date.
       </p>
-      <Button view="action" size="xl" onClick={openRegister}>
+      <Button view="action" size="xl" onClick={openGetStarted}>
         Get Started
       </Button>
     </section>

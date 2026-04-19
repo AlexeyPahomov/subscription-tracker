@@ -1,6 +1,7 @@
 'use client';
 
 import { createUser } from '@/actions/createUser';
+import { appConfig } from '@/config/app.config';
 import { useForm } from '@/hooks/useForm';
 import { useModal } from '@/hooks/useModal';
 import { Button, Dialog, PasswordInput, TextInput } from '@gravity-ui/uikit';
@@ -9,6 +10,7 @@ import { signIn } from 'next-auth/react';
 import {
   createContext,
   useContext,
+  useEffect,
   useMemo,
   useState,
   type ReactNode,
@@ -20,6 +22,8 @@ type AuthModalsContextValue = {
   closeLogin: () => void;
   openRegister: () => void;
   closeRegister: () => void;
+  /** С лендинга: модалка входа + Sign Up (как референс) */
+  openGetStarted: () => void;
 };
 
 const AuthModalsContext = createContext<AuthModalsContextValue | null>(null);
@@ -28,6 +32,7 @@ export function AuthModalsProvider({ children }: { children: ReactNode }) {
   const { navigate } = useNavigation();
   const loginModal = useModal();
   const registerModal = useModal();
+  const getStartedModal = useModal();
 
   const {
     values: loginValues,
@@ -47,18 +52,26 @@ export function AuthModalsProvider({ children }: { children: ReactNode }) {
   const [regError, setRegError] = useState<string | null>(null);
   const [regPending, setRegPending] = useState(false);
 
+  useEffect(() => {
+    if (getStartedModal.isOpen) {
+      setLoginError(null);
+    }
+  }, [getStartedModal.isOpen]);
+
   const value = useMemo(
     () => ({
       openLogin: loginModal.open,
       closeLogin: loginModal.close,
       openRegister: registerModal.open,
       closeRegister: registerModal.close,
+      openGetStarted: getStartedModal.open,
     }),
     [
       loginModal.open,
       loginModal.close,
       registerModal.open,
       registerModal.close,
+      getStartedModal.open,
     ],
   );
 
@@ -82,6 +95,38 @@ export function AuthModalsProvider({ children }: { children: ReactNode }) {
     } finally {
       setLoginPending(false);
     }
+  }
+
+  async function handleGetStartedLoginSubmit(e: SubmitEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setLoginError(null);
+    setLoginPending(true);
+    try {
+      const res = await signIn('credentials', {
+        email: loginValues.email,
+        password: loginValues.password,
+        redirect: false,
+      });
+      if (res?.error) {
+        setLoginError('Неверный email или пароль');
+        return;
+      }
+      getStartedModal.close();
+      setLoginValues({ email: '', password: '' });
+      navigate('/dashboard');
+    } finally {
+      setLoginPending(false);
+    }
+  }
+
+  function goToRegisterFromGetStarted() {
+    setRegError(null);
+    setRegisterValues((prev) => ({
+      ...prev,
+      email: loginValues.email,
+    }));
+    getStartedModal.close();
+    registerModal.open();
   }
 
   async function handleRegisterSubmit(e: SubmitEvent<HTMLFormElement>) {
@@ -123,12 +168,71 @@ export function AuthModalsProvider({ children }: { children: ReactNode }) {
     <AuthModalsContext.Provider value={value}>
       {children}
       <Dialog
+        open={getStartedModal.isOpen}
+        size="s"
+        onClose={getStartedModal.close}
+        hasCloseButton
+      >
+        <Dialog.Header caption="Authorization" />
+        <Dialog.Body className="pt-2">
+          <p className="mb-4 text-sm text-(--g-color-text-secondary)">
+            Welcome to {appConfig.title}, please login if you have registration
+          </p>
+          <form
+            className="flex flex-col gap-5"
+            onSubmit={handleGetStartedLoginSubmit}
+          >
+            <TextInput
+              name="email"
+              type="text"
+              placeholder="john@example.com"
+              value={loginValues.email}
+              onChange={handleLoginChange}
+              controlProps={{ required: true, autoComplete: 'email' }}
+            />
+            <PasswordInput
+              name="password"
+              placeholder="Enter your password"
+              value={loginValues.password}
+              onChange={handleLoginChange}
+              controlProps={{
+                required: true,
+                autoComplete: 'current-password',
+              }}
+            />
+            {loginError ? (
+              <p className="text-sm text-(--g-color-text-danger)" role="alert">
+                {loginError}
+              </p>
+            ) : null}
+            <div className="flex flex-wrap justify-end gap-3 pt-2">
+              <Button
+                view="outlined"
+                type="button"
+                onClick={goToRegisterFromGetStarted}
+              >
+                Sign Up
+              </Button>
+              <Button
+                view="action"
+                type="submit"
+                loading={loginPending}
+                disabled={loginPending}
+              >
+                Sign in
+              </Button>
+            </div>
+          </form>
+        </Dialog.Body>
+      </Dialog>
+
+      <Dialog
         open={loginModal.isOpen}
         size="s"
         onClose={loginModal.close}
         hasCloseButton
       >
-        <Dialog.Header caption="Авторизация" />
+        <Dialog.Header caption="Authorization" />
         <Dialog.Body className="pt-2">
           <form className="flex flex-col gap-5" onSubmit={handleLoginSubmit}>
             <TextInput
@@ -177,7 +281,7 @@ export function AuthModalsProvider({ children }: { children: ReactNode }) {
         onClose={registerModal.close}
         hasCloseButton
       >
-        <Dialog.Header caption="Регистрация" />
+        <Dialog.Header caption="Register" />
         <Dialog.Body className="pt-2">
           <form className="flex flex-col gap-5" onSubmit={handleRegisterSubmit}>
             <TextInput
