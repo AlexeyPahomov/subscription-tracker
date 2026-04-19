@@ -4,7 +4,7 @@ import { createUser } from '@/actions/createUser';
 import { useForm } from '@/hooks/useForm';
 import { useModal } from '@/hooks/useModal';
 import { Button, Dialog, PasswordInput, TextInput } from '@gravity-ui/uikit';
-import { useRouter } from 'next/navigation';
+import { useNavigation } from '@/components/navigation/navigation-provider';
 import { signIn } from 'next-auth/react';
 import {
   createContext,
@@ -25,7 +25,7 @@ type AuthModalsContextValue = {
 const AuthModalsContext = createContext<AuthModalsContextValue | null>(null);
 
 export function AuthModalsProvider({ children }: { children: ReactNode }) {
-  const router = useRouter();
+  const { navigate } = useNavigation();
   const loginModal = useModal();
   const registerModal = useModal();
 
@@ -78,7 +78,7 @@ export function AuthModalsProvider({ children }: { children: ReactNode }) {
       }
       loginModal.close();
       setLoginValues({ email: '', password: '' });
-      router.push('/dashboard');
+      navigate('/dashboard');
     } finally {
       setLoginPending(false);
     }
@@ -113,7 +113,7 @@ export function AuthModalsProvider({ children }: { children: ReactNode }) {
       }
       registerModal.close();
       setRegisterValues({ name: '', email: '', password: '' });
-      router.push('/dashboard');
+      navigate('/dashboard');
     } finally {
       setRegPending(false);
     }

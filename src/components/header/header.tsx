@@ -5,7 +5,7 @@ import { ProfileMenu } from '@/components/header/profile-menu';
 import { appConfig } from '@/config/app.config';
 import { layoutConfig } from '@/config/layout.config';
 import { Button } from '@gravity-ui/uikit';
-import NextLink from 'next/link';
+import { AppLink } from '@/components/navigation/navigation-provider';
 import { usePathname } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 
@@ -31,29 +31,29 @@ export default function Header() {
       style={{ height: layoutConfig.headerHeight }}
     >
       <div className="container mx-auto grid h-16 grid-cols-[1fr_auto_1fr] items-center px-4">
-        <NextLink
+        <AppLink
           href={showAccount ? '/dashboard' : '/'}
           prefetch={false}
           className="justify-self-start text-xl font-bold text-white"
         >
           {appConfig.title}
-        </NextLink>
+        </AppLink>
 
         {/* Навигация — prefetch off: иначе в dev сыплются фоновые RSC-запросы к каждому маршруту */}
         <nav className="hidden items-center gap-6 justify-self-center md:flex">
           {appConfig.navigation.map(({ title, href }) => (
-            <NextLink
+            <AppLink
               href={href}
               prefetch={false}
               key={href}
-              className={`text-lg transition-colors ${
+              className={`text-lg transition-colors duration-200 ${
                 pathname === href
                   ? 'text-white'
                   : 'text-gray-300 hover:text-white'
               }`}
             >
               {title}
-            </NextLink>
+            </AppLink>
           ))}
         </nav>
 

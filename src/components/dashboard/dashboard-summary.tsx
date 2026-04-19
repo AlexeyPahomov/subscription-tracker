@@ -5,7 +5,7 @@ import {
 import { subscriptionDeepLinkHref } from '@/constants/subscriptionDeepLink';
 import { formatMoneyAmount } from '@/helpers/formatMoneyAmount';
 import type { UpcomingPaymentUrgency } from '@/helpers/getUpcomingPaymentsForUser';
-import Link from 'next/link';
+import { AppLink } from '@/components/navigation/navigation-provider';
 
 type DashboardSummaryProps = {
   currentMonthlyTotal: number;
@@ -77,7 +77,7 @@ export function DashboardSummary({
           )}
 
           {topSubscription && (
-            <Link
+            <AppLink
               href={subscriptionDeepLinkHref(topSubscription.id)}
               className="mt-8 block text-xs leading-relaxed text-gray-500 transition-colors hover:text-indigo-300"
             >
@@ -89,7 +89,7 @@ export function DashboardSummary({
                 {' '}
                 ({topSubscription.priceLabel})
               </span>
-            </Link>
+            </AppLink>
           )}
         </div>
 

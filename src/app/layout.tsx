@@ -8,6 +8,7 @@ import './globals.css';
 import { GravityThemeProvider } from '@/components/gravity-theme-provider/gravity-theme-provider';
 import { AuthModalsProvider } from '@/components/auth/auth-modals-provider';
 import { AuthSessionProvider } from '@/components/auth/auth-session-provider';
+import { NavigationProvider } from '@/components/navigation/navigation-provider';
 import Header from '@/components/header/header';
 import { gravitySystemThemeInlineScript } from '@/config/gravity-system-theme-script';
 import { layoutConfig } from '@/config/layout.config';
@@ -61,10 +62,12 @@ export default async function RootLayout({
         />
         <GravityThemeProvider>
           <AuthSessionProvider session={session}>
-            <AuthModalsProvider>
-              <Header />
-              <main className="h-full flex flex-col">{children}</main>
-            </AuthModalsProvider>
+            <NavigationProvider>
+              <AuthModalsProvider>
+                <Header />
+                <main className="flex h-full min-h-0 flex-col">{children}</main>
+              </AuthModalsProvider>
+            </NavigationProvider>
           </AuthSessionProvider>
         </GravityThemeProvider>
       </body>

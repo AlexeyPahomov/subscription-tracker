@@ -1,5 +1,6 @@
 'use client';
 
+import { useNavigation } from '@/components/navigation/navigation-provider';
 import { useModal } from '@/hooks/useModal';
 import { Button, User } from '@gravity-ui/uikit';
 import { signOut } from 'next-auth/react';
@@ -11,6 +12,7 @@ type ProfileMenuProps = {
 };
 
 export function ProfileMenu({ name, email }: ProfileMenuProps) {
+  const { beginNavigation } = useNavigation();
   const { isOpen, toggle, close } = useModal();
   const menuRef = useRef<HTMLDivElement | null>(null);
 
@@ -20,7 +22,8 @@ export function ProfileMenu({ name, email }: ProfileMenuProps) {
 
   function handleSignOutClick() {
     close();
-    signOut();
+    beginNavigation();
+    void signOut({ callbackUrl: '/' });
   }
 
   useEffect(() => {
@@ -73,7 +76,10 @@ export function ProfileMenu({ name, email }: ProfileMenuProps) {
           href="/profile"
           view="flat"
           width="auto"
-          onClick={handleEditProfileClick}
+          onClick={() => {
+            beginNavigation();
+            handleEditProfileClick();
+          }}
           className="!justify-start"
         >
           Edit profile

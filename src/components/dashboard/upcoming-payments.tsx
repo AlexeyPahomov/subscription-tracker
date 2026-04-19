@@ -1,5 +1,5 @@
 import type { UpcomingPaymentItem } from '@/helpers/getUpcomingPaymentsForUser';
-import Link from 'next/link';
+import { AppLink } from '@/components/navigation/navigation-provider';
 import { UpcomingItem } from './upcoming-item';
 
 type UpcomingPaymentsProps = {
@@ -35,13 +35,13 @@ export function UpcomingPayments({
           </ul>
           {showViewAll ? (
             <div className="mt-3 flex justify-end">
-              <Link
+              <AppLink
                 href="/subscriptions"
                 className="text-sm font-medium text-indigo-400 transition-colors hover:text-indigo-300"
                 aria-label="View all upcoming payments"
               >
                 View all →
-              </Link>
+              </AppLink>
             </div>
           ) : null}
         </>
