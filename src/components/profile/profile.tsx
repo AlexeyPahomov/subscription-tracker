@@ -1,7 +1,10 @@
 'use client';
 
 import { updateUser } from '@/actions/updateUser';
+import { queryKeys } from '@/constants/query-keys';
 import { useForm } from '@/hooks/useForm';
+import type { MeQueryData } from '@/hooks/useMeQuery';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button, PasswordInput, TextInput } from '@gravity-ui/uikit';
 import { useSession } from 'next-auth/react';
 import { useMemo, useState, type FormEvent } from 'react';
@@ -13,15 +16,19 @@ type ProfileProps = {
 
 export function Profile({ initialName, email }: ProfileProps) {
   const { update } = useSession();
+  const queryClient = useQueryClient();
   const { values, handleChange, setValues } = useForm({
     name: initialName,
     email,
     password: '',
   });
 
-  const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+
+  const updateUserMutation = useMutation({
+    mutationFn: updateUser,
+  });
 
   const hasChanges = useMemo(() => {
     return (
@@ -31,14 +38,13 @@ export function Profile({ initialName, email }: ProfileProps) {
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!hasChanges || pending) return;
+    if (!hasChanges || updateUserMutation.isPending) return;
 
     setError(null);
     setSuccess(null);
-    setPending(true);
 
     try {
-      const result = await updateUser({
+      const result = await updateUserMutation.mutateAsync({
         name: values.name,
         password: values.password,
       });
@@ -54,11 +60,20 @@ export function Profile({ initialName, email }: ProfileProps) {
         return;
       }
 
+      queryClient.setQueryData<MeQueryData>(queryKeys.me, (prev) =>
+        prev
+          ? {
+              ...prev,
+              user: { ...prev.user, name: result.name },
+            }
+          : prev,
+      );
+      await queryClient.invalidateQueries({ queryKey: queryKeys.me });
       await update({ name: result.name });
       setValues({ name: result.name, email, password: '' });
       setSuccess('Профиль успешно обновлён');
-    } finally {
-      setPending(false);
+    } catch {
+      setError('Не удалось сохранить профиль');
     }
   }
 
@@ -112,8 +127,8 @@ export function Profile({ initialName, email }: ProfileProps) {
         <Button
           view="action"
           type="submit"
-          loading={pending}
-          disabled={!hasChanges || pending}
+          loading={updateUserMutation.isPending}
+          disabled={!hasChanges || updateUserMutation.isPending}
         >
           Save
         </Button>

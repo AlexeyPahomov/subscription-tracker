@@ -1,8 +1,16 @@
-import { ThemeSettingsSection } from '@/components/settings/theme-settings-section';
-import { requireSessionUserInDb } from '@/helpers/getAuthenticatedUserId';
+'use client';
 
-export default async function SettingsPage() {
-  await requireSessionUserInDb();
+import { ThemeSettingsSection } from '@/components/settings/theme-settings-section';
+import { useMeQuery } from '@/hooks/useMeQuery';
+import { useRedirectOnUnauthorized } from '@/hooks/useRedirectOnUnauthorized';
+
+export default function SettingsPage() {
+  const meQuery = useMeQuery();
+  useRedirectOnUnauthorized(meQuery.error);
+
+  if (meQuery.isPending || !meQuery.data) {
+    return <section className="mx-auto w-full max-w-2xl flex-1 px-4 py-10" />;
+  }
 
   return (
     <section className="mx-auto w-full max-w-2xl flex-1 px-4 py-10">

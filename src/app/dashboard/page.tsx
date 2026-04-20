@@ -1,36 +1,44 @@
-import { requireSessionUserInDb } from '@/helpers/getAuthenticatedUserId';
-import { DASHBOARD_PAGE_SHELL_CLASSNAME } from '@/constants/dashboard-layout';
+'use client';
+
 import {
+  DashboardSkeleton,
   DashboardSummary,
   MonthlySpendLineChart,
   SubscriptionSpendPieChart,
   UpcomingPayments,
 } from '@/components/dashboard';
-import { buildDashboardViewModel } from '@/helpers/buildDashboardViewModel';
-import { getDashboardSpendAnalytics } from '@/helpers/getDashboardSpendAnalytics';
-import { getUpcomingPaymentsForUser } from '@/helpers/getUpcomingPaymentsForUser';
-import { prisma } from '@/utils/prisma';
-import { redirect } from 'next/navigation';
+import { DASHBOARD_PAGE_SHELL_CLASSNAME } from '@/constants/dashboard-layout';
+import { useDashboardQuery } from '@/hooks/useDashboardQuery';
+import { useRedirectOnUnauthorized } from '@/hooks/useRedirectOnUnauthorized';
+import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 
-export default async function DashboardPage() {
-  const userId = await requireSessionUserInDb();
+export default function DashboardPage() {
+  const router = useRouter();
+  const query = useDashboardQuery();
+  useRedirectOnUnauthorized(query.error);
 
-  const subscriptionCount = await prisma.subscription.count({
-    where: { userId },
-  });
-  if (subscriptionCount === 0) {
-    redirect('/subscriptions');
+  useEffect(() => {
+    if (query.data?.needsSubscriptionsSetup) {
+      router.replace('/subscriptions');
+    }
+  }, [query.data, router]);
+
+  if (query.isPending) {
+    return <DashboardSkeleton />;
   }
 
-  const spendAnalytics = await getDashboardSpendAnalytics(userId);
-  const upcomingAll = await getUpcomingPaymentsForUser(userId);
+  if (
+    query.isError ||
+    !query.data ||
+    query.data.needsSubscriptionsSetup ||
+    !query.data.viewModel
+  ) {
+    return <DashboardSkeleton />;
+  }
 
-  const {
-    analytics,
-    upcomingPreview,
-    nextPayment,
-    showViewAllUpcoming,
-  } = buildDashboardViewModel(spendAnalytics, upcomingAll);
+  const { analytics, upcomingPreview, nextPayment, showViewAllUpcoming } =
+    query.data.viewModel;
 
   return (
     <section className={DASHBOARD_PAGE_SHELL_CLASSNAME}>

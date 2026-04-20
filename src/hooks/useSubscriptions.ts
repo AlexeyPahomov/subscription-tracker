@@ -1,6 +1,7 @@
 'use client';
 
 import { dateTimeParse, type DateTime } from '@gravity-ui/date-utils';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   useEffect,
   useState,
@@ -8,6 +9,7 @@ import {
   type SubmitEvent,
 } from 'react';
 import { createSubscription } from '@/actions/createSubscription';
+import { queryKeys } from '@/constants/query-keys';
 import { deleteSubscription } from '@/actions/deleteSubscription';
 import { updateSubscription } from '@/actions/updateSubscription';
 import {
@@ -20,7 +22,14 @@ import type { UserCategoryOption } from '@/helpers/getCategoriesByUserId';
 import { getDefaultSubscriptionCategoryId } from '@/helpers/getDefaultSubscriptionCategoryId';
 import { getSubscriptionActionErrorMessage } from '@/helpers/getSubscriptionActionErrorMessage';
 import { isIntervalValue } from '@/helpers/isIntervalValue';
+import {
+  useSubscriptionsQuery,
+  type SubscriptionsHttpError,
+  type SubscriptionsQueryData,
+} from '@/hooks/useSubscriptionsQuery';
 import type { Subscription } from '@/types/subscription';
+
+export type { SubscriptionsHttpError } from '@/hooks/useSubscriptionsQuery';
 
 function subscriptionRecordToFormValues(
   subscription: Subscription,
@@ -39,15 +48,11 @@ function subscriptionRecordToFormValues(
   };
 }
 
-export function useSubscriptions(
-  initialSubscriptions: Subscription[],
-  categoryOptions: UserCategoryOption[],
-) {
+export function useSubscriptions() {
+  const queryClient = useQueryClient();
   const addEditModal = useModal();
   const deleteConfirmModal = useModal();
 
-  const [subscriptions, setSubscriptions] =
-    useState<Subscription[]>(initialSubscriptions);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const [values, setValues] = useState<SubscriptionFormValues>(
@@ -55,12 +60,10 @@ export function useSubscriptions(
   );
   const [formError, setFormError] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
+  const query = useSubscriptionsQuery();
 
-  useEffect(() => {
-    setSubscriptions(initialSubscriptions);
-  }, [initialSubscriptions]);
+  const subscriptions = query.data?.subscriptions ?? [];
+  const categoryOptions = query.data?.categories ?? [];
 
   /** Пока открыто «Добавить»: если категории уже есть, а выбор пуст — ставим «Other». */
   useEffect(() => {
@@ -82,6 +85,18 @@ export function useSubscriptions(
     pendingDeleteId === null
       ? undefined
       : subscriptions.find((s) => s.id === pendingDeleteId);
+
+  const createMutation = useMutation({
+    mutationFn: createSubscription,
+  });
+
+  const updateMutation = useMutation({
+    mutationFn: updateSubscription,
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: deleteSubscription,
+  });
 
   function resetFormModal() {
     setEditingId(null);
@@ -126,19 +141,27 @@ export function useSubscriptions(
   async function confirmDelete() {
     if (!pendingDeleteId) return;
     const id = pendingDeleteId;
-    setIsDeleting(true);
     setDeleteError(null);
     try {
-      const result = await deleteSubscription(id);
+      const result = await deleteMutation.mutateAsync(id);
       if (!result.ok) {
         setDeleteError(getSubscriptionActionErrorMessage(result.error));
         return;
       }
-      setSubscriptions((prev) => prev.filter((s) => s.id !== id));
+      queryClient.setQueryData<SubscriptionsQueryData>(
+        queryKeys.subscriptions,
+        (prev) =>
+          prev
+            ? {
+                ...prev,
+                subscriptions: prev.subscriptions.filter((s) => s.id !== id),
+              }
+            : prev,
+      );
       setPendingDeleteId(null);
       deleteConfirmModal.close();
     } finally {
-      setIsDeleting(false);
+      await queryClient.invalidateQueries({ queryKey: queryKeys.subscriptions });
     }
   }
 
@@ -176,12 +199,11 @@ export function useSubscriptions(
       values.categoryId.trim() ||
       getDefaultSubscriptionCategoryId(categoryOptions);
 
-    setIsSubmitting(true);
     setFormError(null);
 
     try {
       if (editingId !== null) {
-        const result = await updateSubscription({
+        const result = await updateMutation.mutateAsync({
           id: editingId,
           name,
           price,
@@ -193,11 +215,20 @@ export function useSubscriptions(
           setFormError(getSubscriptionActionErrorMessage(result.error));
           return;
         }
-        setSubscriptions((prev) =>
-          prev.map((s) => (s.id === editingId ? result.subscription : s)),
+        queryClient.setQueryData<SubscriptionsQueryData>(
+          queryKeys.subscriptions,
+          (prev) =>
+            prev
+              ? {
+                  ...prev,
+                  subscriptions: prev.subscriptions.map((s) =>
+                    s.id === editingId ? result.subscription : s,
+                  ),
+                }
+              : prev,
         );
       } else {
-        const result = await createSubscription({
+        const result = await createMutation.mutateAsync({
           name,
           price,
           interval: values.interval,
@@ -208,18 +239,35 @@ export function useSubscriptions(
           setFormError(getSubscriptionActionErrorMessage(result.error));
           return;
         }
-        setSubscriptions((prev) => [...prev, result.subscription]);
+        queryClient.setQueryData<SubscriptionsQueryData>(
+          queryKeys.subscriptions,
+          (prev) =>
+            prev
+              ? {
+                  ...prev,
+                  subscriptions: [...prev.subscriptions, result.subscription],
+                }
+              : prev,
+        );
       }
 
       resetFormModal();
       addEditModal.close();
     } finally {
-      setIsSubmitting(false);
+      await queryClient.invalidateQueries({ queryKey: queryKeys.subscriptions });
     }
   }
 
+  const isSubmitting = createMutation.isPending || updateMutation.isPending;
+  const isDeleting = deleteMutation.isPending;
+
   return {
     subscriptions,
+    categoryOptions,
+    isLoading: query.isPending,
+    isError: query.isError,
+    error: (query.error as SubscriptionsHttpError | null) ?? null,
+    reload: query.refetch,
     isEmpty,
     subscriptionPendingDelete,
     openAddModal,

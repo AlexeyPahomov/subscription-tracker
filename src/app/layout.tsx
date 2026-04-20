@@ -9,6 +9,7 @@ import { GravityThemeProvider } from '@/components/gravity-theme-provider/gravit
 import { AuthModalsProvider } from '@/components/auth/auth-modals-provider';
 import { AuthSessionProvider } from '@/components/auth/auth-session-provider';
 import { NavigationProvider } from '@/components/navigation/navigation-provider';
+import { AppQueryProvider } from '@/components/query/query-provider';
 import { ThemePreferenceProvider } from '@/components/theme/theme-preference-provider';
 import Header from '@/components/header/header';
 import { resolveTheme } from '@/config/theme-preference';
@@ -63,14 +64,16 @@ export default async function RootLayout({
         <ThemePreferenceProvider initialResolved={initialResolved}>
           <GravityThemeProvider>
             <AuthSessionProvider session={session}>
-              <NavigationProvider>
-                <AuthModalsProvider>
-                  <Header />
-                  <main className="flex min-h-0 flex-1 flex-col overflow-x-clip">
-                    {children}
-                  </main>
-                </AuthModalsProvider>
-              </NavigationProvider>
+              <AppQueryProvider>
+                <NavigationProvider>
+                  <AuthModalsProvider>
+                    <Header />
+                    <main className="flex min-h-0 flex-1 flex-col overflow-x-clip">
+                      {children}
+                    </main>
+                  </AuthModalsProvider>
+                </NavigationProvider>
+              </AppQueryProvider>
             </AuthSessionProvider>
           </GravityThemeProvider>
         </ThemePreferenceProvider>
