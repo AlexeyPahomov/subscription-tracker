@@ -1,7 +1,7 @@
 import { recyclePrismaClient } from '@/utils/prisma';
 
 const READ_RETRY =
-  /connection|terminated|not queryable|ECONNRESET|ETIMEDOUT|timeout|exceeded|Connection closed|ECONNREFUSED/i;
+  /connection|terminated|not queryable|ECONNRESET|ETIMEDOUT|timeout|exceeded|Connection closed|ECONNREFUSED|max clients|pool_size/i;
 
 const MUTATION_POOL_DEAD =
   /not queryable|Connection terminated|timeout exceeded|ECONNRESET/i;
@@ -32,6 +32,7 @@ export async function withDbRetry<T>(
       return await fn();
     } catch (e) {
       if (!isRetryableReadError(e) || i === attempts - 1) throw e;
+      await recyclePrismaClient().catch(() => {});
       await new Promise((r) => setTimeout(r, 350 * (i + 1)));
     }
   }

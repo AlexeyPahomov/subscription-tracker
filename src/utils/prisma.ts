@@ -3,7 +3,10 @@ import { PrismaPg } from '@prisma/adapter-pg';
 import pg from 'pg';
 import type { PoolConfig } from 'pg';
 
-const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
+const globalForPrisma = globalThis as unknown as {
+  prisma?: PrismaClient;
+  prismaPool?: pg.Pool;
+};
 
 function relaxedUrlAndSsl(raw: string): Pick<PoolConfig, 'connectionString' | 'ssl'> {
   const url = new URL(raw);
@@ -26,10 +29,17 @@ function poolConfigFromEnv(): PoolConfig {
     : relaxedUrlAndSsl(raw);
 
   const supabasePooler = raw.includes('pooler.supabase.com');
+  const envMax = Number(process.env.PG_POOL_MAX);
+  const poolMax =
+    Number.isFinite(envMax) && envMax > 0
+      ? Math.floor(envMax)
+      : supabasePooler
+        ? 1
+        : 10;
 
   return {
     ...base,
-    max: supabasePooler ? 2 : 10,
+    max: poolMax,
     ...(supabasePooler ? { maxUses: 50 } : {}),
     idleTimeoutMillis: 20_000,
     connectionTimeoutMillis: Number(process.env.PG_CONNECTION_TIMEOUT_MS) || 12_000,
@@ -40,15 +50,19 @@ function poolConfigFromEnv(): PoolConfig {
   };
 }
 
-function createAdapter() {
-  const pool = new pg.Pool(poolConfigFromEnv());
-  pool.on('error', (err) => console.error('[pg Pool]', err));
-  return new PrismaPg(pool);
+function getPool() {
+  if (!globalForPrisma.prismaPool) {
+    globalForPrisma.prismaPool = new pg.Pool(poolConfigFromEnv());
+    globalForPrisma.prismaPool.on('error', (err) =>
+      console.error('[pg Pool]', err),
+    );
+  }
+  return globalForPrisma.prismaPool;
 }
 
 function getClient(): PrismaClient {
   if (!globalForPrisma.prisma) {
-    globalForPrisma.prisma = new PrismaClient({ adapter: createAdapter() });
+    globalForPrisma.prisma = new PrismaClient({ adapter: new PrismaPg(getPool()) });
   }
   return globalForPrisma.prisma;
 }
@@ -58,8 +72,8 @@ export async function ensureDatabaseConnection(): Promise<void> {
 }
 
 export async function recyclePrismaClient(): Promise<void> {
-  const p = globalForPrisma.prisma;
-  if (p) await p.$disconnect().catch(() => {});
+  const { prisma } = globalForPrisma;
+  if (prisma) await prisma.$disconnect().catch(() => {});
   delete globalForPrisma.prisma;
 }
 
