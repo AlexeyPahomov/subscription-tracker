@@ -43,6 +43,9 @@ model Subscription {
   categoryId  String?
   category    Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
 
+  remindBefore  Int?    
+  lastNotified  DateTime?
+
   createdAt   DateTime  @default(now())
 
   @@index([categoryId])
