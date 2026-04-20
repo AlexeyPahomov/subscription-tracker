@@ -1,6 +1,7 @@
 'use client';
 
 import { layoutConfig } from '@/config/layout.config';
+import { Loader } from '@gravity-ui/uikit';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import {
@@ -55,10 +56,7 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
           aria-live="polite"
           aria-label="Загрузка страницы"
         >
-          <div
-            className="h-10 w-10 animate-spin rounded-full border-2 border-[color-mix(in_oklab,var(--foreground)_35%,transparent)] border-t-foreground"
-            aria-hidden
-          />
+          <Loader size="l" />
         </div>
       ) : null}
     </NavigationContext.Provider>
