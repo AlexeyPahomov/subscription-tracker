@@ -49,8 +49,8 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
       {children}
       {loading ? (
         <div
-          className="fixed right-0 bottom-0 left-0 z-40 flex items-center justify-center bg-(--background)/88 backdrop-blur-sm motion-safe:animate-[nav-overlay-in_0.2s_ease-out]"
-          style={{ top: layoutConfig.headerHeight }}
+          className="fixed inset-0 z-40 grid place-items-center bg-(--background)/88 backdrop-blur-sm motion-safe:animate-[nav-overlay-in_0.2s_ease-out]"
+          style={{ paddingTop: layoutConfig.headerHeight }}
           role="status"
           aria-live="polite"
           aria-label="Загрузка страницы"

@@ -29,7 +29,7 @@ export default function Header() {
 
   return (
     <header
-      className="sticky top-0 z-50 w-full border-b border-neutral-200 bg-white/90 backdrop-blur-lg dark:border-gray-800 dark:bg-black/80"
+      className="sticky top-0 z-50 box-border w-full border-b border-neutral-200 bg-white/90 backdrop-blur-lg dark:border-gray-800 dark:bg-black/80"
       style={{ height: layoutConfig.headerHeight }}
     >
       <div

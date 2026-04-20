@@ -12,7 +12,6 @@ import { NavigationProvider } from '@/components/navigation/navigation-provider'
 import { ThemePreferenceProvider } from '@/components/theme/theme-preference-provider';
 import Header from '@/components/header/header';
 import { resolveTheme } from '@/config/theme-preference';
-import { layoutConfig } from '@/config/layout.config';
 import { appConfig } from '@/config/app.config';
 import { auth } from '@/auth';
 
@@ -59,7 +58,7 @@ export default async function RootLayout({
       <body
         suppressHydrationWarning
         className={gravityBodyClassName}
-        style={{ height: `calc(100vh - ${layoutConfig.headerHeight})` }}
+        style={{ minHeight: '100dvh' }}
       >
         <ThemePreferenceProvider initialResolved={initialResolved}>
           <GravityThemeProvider>
@@ -67,7 +66,9 @@ export default async function RootLayout({
               <NavigationProvider>
                 <AuthModalsProvider>
                   <Header />
-                  <main className="flex h-full min-h-0 flex-col">{children}</main>
+                  <main className="flex min-h-0 flex-1 flex-col overflow-x-clip">
+                    {children}
+                  </main>
                 </AuthModalsProvider>
               </NavigationProvider>
             </AuthSessionProvider>
