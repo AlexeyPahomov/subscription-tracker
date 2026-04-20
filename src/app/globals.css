@@ -66,6 +66,16 @@ body.mobile-menu-open main {
   transition: filter 0.2s ease-out;
 }
 
+body.dialog-open main {
+  filter: blur(1px);
+  transition: filter 0.2s ease-out;
+}
+
+body.dialog-open header {
+  filter: blur(1px);
+  transition: filter 0.2s ease-out;
+}
+
 body.mobile-menu-open {
   overscroll-behavior: none;
 }

@@ -1,4 +1,5 @@
 import { useBodyLockClass } from '@/hooks/useBodyLockClass';
+import { useEffect } from 'react';
 
 const DIALOG_LOCK_CLASS = 'dialog-open';
 const DIALOG_SCROLLABLE_SELECTOR = '.g-modal';
@@ -17,4 +18,22 @@ export function useDialogScrollLock(isOpen: boolean) {
     preventScrollEvents: true,
     allowScrollWithinSelector: DIALOG_SCROLLABLE_SELECTOR,
   });
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const header = document.querySelector('header');
+    if (!header) return;
+
+    const hadInert = header.hasAttribute('inert');
+    if (!hadInert) {
+      header.setAttribute('inert', '');
+    }
+
+    return () => {
+      if (!hadInert) {
+        header.removeAttribute('inert');
+      }
+    };
+  }, [isOpen]);
 }
