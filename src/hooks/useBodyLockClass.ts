@@ -25,8 +25,8 @@ export function useBodyLockClass({
   useEffect(() => {
     if (!isActive) return;
 
-    const htmlOverflow = document.documentElement.style.overflow;
-    const bodyOverflow = document.body.style.overflow;
+    const htmlOverflow = lockHtml ? document.documentElement.style.overflow : '';
+    const bodyOverflow = lockBody ? document.body.style.overflow : '';
 
     if (lockHtml) {
       document.documentElement.style.overflow = overflowValue;
@@ -47,9 +47,11 @@ export function useBodyLockClass({
       event.preventDefault();
     };
 
+    const listenerOptions = { passive: false } as const;
+
     if (preventScrollEvents) {
-      document.addEventListener('wheel', preventScroll, { passive: false });
-      document.addEventListener('touchmove', preventScroll, { passive: false });
+      document.addEventListener('wheel', preventScroll, listenerOptions);
+      document.addEventListener('touchmove', preventScroll, listenerOptions);
     }
 
     return () => {
