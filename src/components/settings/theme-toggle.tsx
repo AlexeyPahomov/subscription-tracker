@@ -15,6 +15,7 @@ const segmentedActiveClass =
 
 const segmentedInactiveClass =
   'text-neutral-600! hover:text-neutral-900! dark:text-gray-400! dark:hover:text-gray-200!';
+const segmentedLayoutClass = 'items-center!';
 
 const THEME_ICONS: Record<ThemePreference, LucideIcon> = {
   light: Sun,
@@ -48,10 +49,10 @@ function ThemePreferenceOption({
       aria-pressed={active}
       aria-label={`${label}: ${description}`}
       onClick={() => onSelect(value)}
-      className={active ? segmentedActiveClass : segmentedInactiveClass}
+      className={`${segmentedLayoutClass} ${active ? segmentedActiveClass : segmentedInactiveClass}`}
     >
       <span className="flex items-center gap-2 px-1">
-        <Icon size={18} strokeWidth={2} aria-hidden />
+        <Icon size={18} strokeWidth={2} className="block" aria-hidden />
         <span className="hidden sm:inline">{label}</span>
       </span>
     </Button>
