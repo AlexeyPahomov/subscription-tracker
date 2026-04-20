@@ -1,10 +1,11 @@
 'use client';
 
 import { useNavigation } from '@/components/navigation/navigation-provider';
+import { useDismissibleLayer } from '@/hooks/useDismissibleLayer';
 import { useModal } from '@/hooks/useModal';
 import { Button, User } from '@gravity-ui/uikit';
 import { signOut } from 'next-auth/react';
-import { useEffect, useRef } from 'react';
+import { useRef } from 'react';
 
 type ProfileMenuProps = {
   name: string;
@@ -26,30 +27,11 @@ export function ProfileMenu({ name, email }: ProfileMenuProps) {
     void signOut({ callbackUrl: '/' });
   }
 
-  useEffect(() => {
-    if (!isOpen) return;
-
-    function handlePointerDown(event: MouseEvent) {
-      const target = event.target as Node | null;
-      if (!target || !menuRef.current?.contains(target)) {
-        close();
-      }
-    }
-
-    function handleEscape(event: KeyboardEvent) {
-      if (event.key === 'Escape') {
-        close();
-      }
-    }
-
-    document.addEventListener('mousedown', handlePointerDown);
-    document.addEventListener('keydown', handleEscape);
-
-    return () => {
-      document.removeEventListener('mousedown', handlePointerDown);
-      document.removeEventListener('keydown', handleEscape);
-    };
-  }, [isOpen, close]);
+  useDismissibleLayer({
+    isOpen,
+    containerRef: menuRef,
+    onDismiss: close,
+  });
 
   return (
     <div className="relative" ref={menuRef}>

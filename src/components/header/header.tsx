@@ -1,6 +1,7 @@
 'use client';
 
 import { ProfileMenu } from '@/components/header/profile-menu';
+import { MobileMenu } from '@/components/header/mobile-menu';
 import { appConfig } from '@/config/app.config';
 import { layoutConfig } from '@/config/layout.config';
 import { AppLink } from '@/components/navigation/navigation-provider';
@@ -22,6 +23,9 @@ export default function Header() {
   const pathname = usePathname();
   const showAccount = hasUsableSession(status, session);
   const isLanding = pathname === '/';
+  const userName = session?.user?.name ?? session?.user?.email ?? '';
+  const userEmail = session?.user?.email ?? '';
+  const isSessionLoading = status === 'loading';
 
   return (
     <header
@@ -29,8 +33,10 @@ export default function Header() {
       style={{ height: layoutConfig.headerHeight }}
     >
       <div
-        className={`container mx-auto grid h-16 items-center px-4 ${
-          isLanding ? 'grid-cols-[1fr_auto]' : 'grid-cols-[1fr_auto_1fr]'
+        className={`container mx-auto grid h-16 items-center px-3 sm:px-4 ${
+          isLanding
+            ? 'grid-cols-[1fr_auto]'
+            : 'grid-cols-[1fr_auto] lg:grid-cols-[1fr_auto_1fr]'
         }`}
       >
         <AppLink
@@ -43,7 +49,7 @@ export default function Header() {
 
         {/* На лендинге меню скрыто; prefetch off — меньше фоновых RSC в dev */}
         {!isLanding ? (
-          <nav className="hidden items-center gap-6 justify-self-center md:flex">
+          <nav className="hidden items-center gap-6 justify-self-center lg:flex">
             {appConfig.navigation.map(({ title, href }) => (
               <AppLink
                 href={href}
@@ -63,14 +69,23 @@ export default function Header() {
 
         {/* Профиль; гостям — пусто */}
         <div className="flex items-center justify-self-end gap-2 sm:gap-3">
-          {status === 'loading' ? (
-            <div className="h-9 w-32" aria-hidden="true" />
-          ) : showAccount ? (
-            <ProfileMenu
-              name={session?.user?.name ?? session?.user?.email ?? ''}
-              email={session?.user?.email ?? ''}
+          <div className="hidden lg:block">
+            {isSessionLoading ? (
+              <div className="h-9 w-32" aria-hidden="true" />
+            ) : showAccount ? (
+              <ProfileMenu name={userName} email={userEmail} />
+            ) : null}
+          </div>
+          {isSessionLoading ? (
+            <div className="h-10 w-10 lg:hidden" aria-hidden="true" />
+          ) : (
+            <MobileMenu
+              isLanding={isLanding}
+              showAccount={showAccount}
+              name={userName}
+              email={userEmail}
             />
-          ) : null}
+          )}
         </div>
       </div>
     </header>
