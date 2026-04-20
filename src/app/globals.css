@@ -65,3 +65,7 @@ body.mobile-menu-open main {
   filter: blur(1px);
   transition: filter 0.2s ease-out;
 }
+
+body.mobile-menu-open {
+  overscroll-behavior: none;
+}

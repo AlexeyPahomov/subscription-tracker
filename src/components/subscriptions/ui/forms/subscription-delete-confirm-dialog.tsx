@@ -1,5 +1,11 @@
 'use client';
 
+import {
+  responsiveDialogActionsClass,
+  responsiveDialogBaseProps,
+  responsiveDialogBodyClass,
+} from '@/components/dialog/dialog-responsive';
+import { useDialogScrollLock } from '@/hooks/useDialogScrollLock';
 import { Button, Dialog } from '@gravity-ui/uikit';
 
 type SubscriptionDeleteConfirmDialogProps = {
@@ -19,10 +25,18 @@ export function SubscriptionDeleteConfirmDialog({
   isDeleting = false,
   errorMessage,
 }: SubscriptionDeleteConfirmDialogProps) {
+  useDialogScrollLock(open);
+
   return (
-    <Dialog open={open} size="s" onClose={onCancel} hasCloseButton>
+    <Dialog
+      open={open}
+      size="s"
+      onClose={onCancel}
+      hasCloseButton
+      {...responsiveDialogBaseProps}
+    >
       <Dialog.Header caption="Delete subscription" />
-      <Dialog.Body className="flex flex-col gap-4 pt-2">
+      <Dialog.Body className={`flex flex-col gap-4 ${responsiveDialogBodyClass}`}>
         <p className="text-sm text-neutral-700 dark:text-gray-300">
           {`Are you sure you want to delete “${subscriptionName}”?`}
           <br />
@@ -33,12 +47,13 @@ export function SubscriptionDeleteConfirmDialog({
             {errorMessage}
           </p>
         ) : null}
-        <div className="flex justify-end gap-3 pt-1">
+        <div className={responsiveDialogActionsClass}>
           <Button
             view="outlined"
             type="button"
             onClick={onCancel}
             disabled={isDeleting}
+            className="w-full sm:w-auto"
           >
             Cancel
           </Button>
@@ -48,6 +63,7 @@ export function SubscriptionDeleteConfirmDialog({
             loading={isDeleting}
             disabled={isDeleting}
             onClick={onConfirm}
+            className="w-full sm:w-auto"
           >
             Delete
           </Button>

@@ -1,7 +1,13 @@
 'use client';
 
 import { createUser } from '@/actions/createUser';
+import {
+  responsiveDialogActionsClass,
+  responsiveDialogBaseProps,
+  responsiveDialogBodyClass,
+} from '@/components/dialog/dialog-responsive';
 import { appConfig } from '@/config/app.config';
+import { useDialogScrollLock } from '@/hooks/useDialogScrollLock';
 import { useForm } from '@/hooks/useForm';
 import { useModal } from '@/hooks/useModal';
 import { Button, Dialog, PasswordInput, TextInput } from '@gravity-ui/uikit';
@@ -51,6 +57,10 @@ export function AuthModalsProvider({ children }: { children: ReactNode }) {
 
   const [regError, setRegError] = useState<string | null>(null);
   const [regPending, setRegPending] = useState(false);
+
+  useDialogScrollLock(
+    getStartedModal.isOpen || loginModal.isOpen || registerModal.isOpen,
+  );
 
   useEffect(() => {
     if (getStartedModal.isOpen) {
@@ -172,9 +182,10 @@ export function AuthModalsProvider({ children }: { children: ReactNode }) {
         size="s"
         onClose={getStartedModal.close}
         hasCloseButton
+        {...responsiveDialogBaseProps}
       >
         <Dialog.Header caption="Authorization" />
-        <Dialog.Body className="pt-2">
+        <Dialog.Body className={responsiveDialogBodyClass}>
           <p className="mb-4 text-sm text-(--g-color-text-secondary)">
             Welcome to {appConfig.title}, please login if you have registration
           </p>
@@ -205,11 +216,12 @@ export function AuthModalsProvider({ children }: { children: ReactNode }) {
                 {loginError}
               </p>
             ) : null}
-            <div className="flex flex-wrap justify-end gap-3 pt-2">
+            <div className={responsiveDialogActionsClass}>
               <Button
                 view="outlined"
                 type="button"
                 onClick={goToRegisterFromGetStarted}
+                className="w-full sm:w-auto"
               >
                 Sign Up
               </Button>
@@ -218,6 +230,7 @@ export function AuthModalsProvider({ children }: { children: ReactNode }) {
                 type="submit"
                 loading={loginPending}
                 disabled={loginPending}
+                className="w-full sm:w-auto"
               >
                 Sign in
               </Button>
@@ -231,9 +244,10 @@ export function AuthModalsProvider({ children }: { children: ReactNode }) {
         size="s"
         onClose={loginModal.close}
         hasCloseButton
+        {...responsiveDialogBaseProps}
       >
         <Dialog.Header caption="Authorization" />
-        <Dialog.Body className="pt-2">
+        <Dialog.Body className={responsiveDialogBodyClass}>
           <form className="flex flex-col gap-5" onSubmit={handleLoginSubmit}>
             <TextInput
               name="email"
@@ -258,8 +272,13 @@ export function AuthModalsProvider({ children }: { children: ReactNode }) {
                 {loginError}
               </p>
             ) : null}
-            <div className="flex justify-end gap-3 pt-2">
-              <Button view="outlined" type="button" onClick={loginModal.close}>
+            <div className={responsiveDialogActionsClass}>
+              <Button
+                view="outlined"
+                type="button"
+                onClick={loginModal.close}
+                className="w-full sm:w-auto"
+              >
                 Cancel
               </Button>
               <Button
@@ -267,6 +286,7 @@ export function AuthModalsProvider({ children }: { children: ReactNode }) {
                 type="submit"
                 loading={loginPending}
                 disabled={loginPending}
+                className="w-full sm:w-auto"
               >
                 Sign in
               </Button>
@@ -280,9 +300,10 @@ export function AuthModalsProvider({ children }: { children: ReactNode }) {
         size="s"
         onClose={registerModal.close}
         hasCloseButton
+        {...responsiveDialogBaseProps}
       >
         <Dialog.Header caption="Register" />
-        <Dialog.Body className="pt-2">
+        <Dialog.Body className={responsiveDialogBodyClass}>
           <form className="flex flex-col gap-5" onSubmit={handleRegisterSubmit}>
             <TextInput
               name="name"
@@ -312,11 +333,12 @@ export function AuthModalsProvider({ children }: { children: ReactNode }) {
                 {regError}
               </p>
             ) : null}
-            <div className="flex justify-end gap-3 pt-2">
+            <div className={responsiveDialogActionsClass}>
               <Button
                 view="outlined"
                 type="button"
                 onClick={registerModal.close}
+                className="w-full sm:w-auto"
               >
                 Cancel
               </Button>
@@ -325,6 +347,7 @@ export function AuthModalsProvider({ children }: { children: ReactNode }) {
                 type="submit"
                 loading={regPending}
                 disabled={regPending}
+                className="w-full sm:w-auto"
               >
                 Register
               </Button>

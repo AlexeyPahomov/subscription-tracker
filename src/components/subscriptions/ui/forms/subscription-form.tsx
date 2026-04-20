@@ -3,6 +3,12 @@
 import { DatePicker } from '@gravity-ui/date-components';
 import type { DateTime } from '@gravity-ui/date-utils';
 import {
+  responsiveDialogActionsClass,
+  responsiveDialogBaseProps,
+  responsiveDialogBodyClass,
+} from '@/components/dialog/dialog-responsive';
+import { useDialogScrollLock } from '@/hooks/useDialogScrollLock';
+import {
   Button,
   Dialog,
   Select,
@@ -43,10 +49,18 @@ export function SubscriptionForm({
   errorMessage,
   isSubmitting = false,
 }: SubscriptionFormProps) {
+  useDialogScrollLock(open);
+
   return (
-    <Dialog open={open} size="m" onClose={onClose} hasCloseButton>
+    <Dialog
+      open={open}
+      size="m"
+      onClose={onClose}
+      hasCloseButton
+      {...responsiveDialogBaseProps}
+    >
       <Dialog.Header caption={title} />
-      <Dialog.Body className="pt-2">
+      <Dialog.Body className={responsiveDialogBodyClass}>
         <form className="flex flex-col gap-4" onSubmit={onSubmit}>
           <TextInput
             name="name"
@@ -88,12 +102,13 @@ export function SubscriptionForm({
             </p>
           ) : null}
 
-          <div className="flex justify-end gap-3 pt-2">
+          <div className={responsiveDialogActionsClass}>
             <Button
               view="outlined"
               type="button"
               onClick={onClose}
               disabled={isSubmitting}
+              className="w-full sm:w-auto"
             >
               Cancel
             </Button>
@@ -102,6 +117,7 @@ export function SubscriptionForm({
               type="submit"
               loading={isSubmitting}
               disabled={!values.nextPaymentDate || isSubmitting}
+              className="w-full sm:w-auto"
             >
               Save
             </Button>

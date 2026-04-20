@@ -3,22 +3,75 @@ import { useEffect } from 'react';
 type UseBodyLockClassParams = {
   isActive: boolean;
   className: string;
+  lockHtml?: boolean;
+  lockBody?: boolean;
+  overflowValue?: 'clip' | 'hidden';
+  preventScrollEvents?: boolean;
+  allowScrollWithinSelector?: string;
 };
 
 /**
  * Блокирует скролл body и выставляет служебный класс, пока слой открыт.
  */
-export function useBodyLockClass({ isActive, className }: UseBodyLockClassParams) {
+export function useBodyLockClass({
+  isActive,
+  className,
+  lockHtml = true,
+  lockBody = true,
+  overflowValue = 'clip',
+  preventScrollEvents = false,
+  allowScrollWithinSelector,
+}: UseBodyLockClassParams) {
   useEffect(() => {
     if (!isActive) return;
 
-    const { overflow } = document.body.style;
-    document.body.style.overflow = 'hidden';
+    const htmlOverflow = document.documentElement.style.overflow;
+    const bodyOverflow = document.body.style.overflow;
+
+    if (lockHtml) {
+      document.documentElement.style.overflow = overflowValue;
+    }
+    if (lockBody) {
+      document.body.style.overflow = overflowValue;
+    }
     document.body.classList.add(className);
 
-    return () => {
-      document.body.style.overflow = overflow;
-      document.body.classList.remove(className);
+    const shouldAllowTarget = (target: EventTarget | null) => {
+      if (!allowScrollWithinSelector) return false;
+      if (!(target instanceof Element)) return false;
+      return Boolean(target.closest(allowScrollWithinSelector));
     };
-  }, [isActive, className]);
+
+    const preventScroll = (event: WheelEvent | TouchEvent) => {
+      if (shouldAllowTarget(event.target)) return;
+      event.preventDefault();
+    };
+
+    if (preventScrollEvents) {
+      document.addEventListener('wheel', preventScroll, { passive: false });
+      document.addEventListener('touchmove', preventScroll, { passive: false });
+    }
+
+    return () => {
+      if (lockHtml) {
+        document.documentElement.style.overflow = htmlOverflow;
+      }
+      if (lockBody) {
+        document.body.style.overflow = bodyOverflow;
+      }
+      document.body.classList.remove(className);
+      if (preventScrollEvents) {
+        document.removeEventListener('wheel', preventScroll);
+        document.removeEventListener('touchmove', preventScroll);
+      }
+    };
+  }, [
+    isActive,
+    className,
+    lockHtml,
+    lockBody,
+    overflowValue,
+    preventScrollEvents,
+    allowScrollWithinSelector,
+  ]);
 }
