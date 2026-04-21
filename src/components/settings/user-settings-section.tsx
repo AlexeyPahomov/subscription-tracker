@@ -1,20 +1,44 @@
 'use client';
-
 import { updateUserSettings } from '@/actions/updateUserSettings';
 import { queryKeys } from '@/constants/query-keys';
 import { SettingsSection } from '@/components/settings/settings-section';
-import type { UserSettings, UserSettingsQueryData } from '@/types/user-settings';
+import {
+  detectInitialTimezone,
+  getTimezoneOptions,
+} from '@/helpers/timezoneOptions';
+import type {
+  UserSettings,
+  UserSettingsQueryData,
+} from '@/types/user-settings';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Button, TextInput } from '@gravity-ui/uikit';
+import { Button, Select, TextInput } from '@gravity-ui/uikit';
 import { useMemo, useState, type ChangeEvent, type FormEvent } from 'react';
 
 type UserSettingsSectionProps = {
   initialSettings: UserSettings;
+  hasPersistedSettings: boolean;
 };
 
-export function UserSettingsSection({ initialSettings }: UserSettingsSectionProps) {
+const SETTINGS_MESSAGES = {
+  validationError:
+    'Проверьте: remindBefore 0..30, timezone IANA, currency из 3 букв.',
+  unauthorizedError: 'Сессия истекла, войдите снова.',
+  saveError: 'Не удалось сохранить настройки.',
+  saveSuccess: 'Настройки сохранены.',
+} as const;
+
+export function UserSettingsSection({
+  initialSettings,
+  hasPersistedSettings,
+}: UserSettingsSectionProps) {
   const queryClient = useQueryClient();
-  const [values, setValues] = useState<UserSettings>(initialSettings);
+  const [values, setValues] = useState<UserSettings>(() => ({
+    ...initialSettings,
+    timezone: detectInitialTimezone(
+      hasPersistedSettings,
+      initialSettings.timezone,
+    ),
+  }));
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
@@ -22,22 +46,20 @@ export function UserSettingsSection({ initialSettings }: UserSettingsSectionProp
     mutationFn: updateUserSettings,
   });
 
+  const timezoneOptions = useMemo(() => getTimezoneOptions(), []);
+
   const hasChanges = useMemo(
     () =>
       values.emailNotifications !== initialSettings.emailNotifications ||
       values.remindBefore !== initialSettings.remindBefore ||
       values.timezone.trim() !== initialSettings.timezone.trim() ||
-      values.currency.trim().toUpperCase() !== initialSettings.currency.trim().toUpperCase(),
+      values.currency.trim().toUpperCase() !==
+        initialSettings.currency.trim().toUpperCase(),
     [initialSettings, values],
   );
 
   function handleTextChange(event: ChangeEvent<HTMLInputElement>) {
     const { name, value } = event.target;
-    if (name === 'timezone') {
-      setValues((prev) => ({ ...prev, timezone: value }));
-      return;
-    }
-
     if (name === 'currency') {
       setValues((prev) => ({ ...prev, currency: value.toUpperCase() }));
       return;
@@ -53,7 +75,16 @@ export function UserSettingsSection({ initialSettings }: UserSettingsSectionProp
   }
 
   function handleNotificationsChange(event: ChangeEvent<HTMLInputElement>) {
-    setValues((prev) => ({ ...prev, emailNotifications: event.target.checked }));
+    setValues((prev) => ({
+      ...prev,
+      emailNotifications: event.target.checked,
+    }));
+  }
+
+  function handleTimezoneUpdate(nextTimezone: string[]) {
+    const value = nextTimezone[0];
+    if (!value) return;
+    setValues((prev) => ({ ...prev, timezone: value }));
   }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -67,22 +98,25 @@ export function UserSettingsSection({ initialSettings }: UserSettingsSectionProp
       const result = await updateSettingsMutation.mutateAsync(values);
       if (!result.ok) {
         if (result.error === 'validation') {
-          setError('Проверьте: remindBefore 0..30, timezone не пустой, currency из 3 букв.');
+          setError(SETTINGS_MESSAGES.validationError);
         } else if (result.error === 'unauthorized') {
-          setError('Сессия истекла, войдите снова.');
+          setError(SETTINGS_MESSAGES.unauthorizedError);
         } else {
-          setError('Не удалось сохранить настройки.');
+          setError(SETTINGS_MESSAGES.saveError);
         }
         return;
       }
 
-      const nextData: UserSettingsQueryData = { settings: result.settings };
+      const nextData: UserSettingsQueryData = {
+        settings: result.settings,
+        hasPersistedSettings: true,
+      };
       queryClient.setQueryData(queryKeys.settings, nextData);
       await queryClient.invalidateQueries({ queryKey: queryKeys.settings });
       setValues(result.settings);
-      setSuccess('Настройки сохранены.');
+      setSuccess(SETTINGS_MESSAGES.saveSuccess);
     } catch {
-      setError('Не удалось сохранить настройки.');
+      setError(SETTINGS_MESSAGES.saveError);
     }
   }
 
@@ -112,22 +146,21 @@ export function UserSettingsSection({ initialSettings }: UserSettingsSectionProp
           controlProps={{ min: 0, max: 30, step: 1 }}
         />
 
-        <TextInput
-          name="timezone"
-          type="text"
-          label="Timezone"
-          value={values.timezone}
-          onChange={handleTextChange}
-          controlProps={{ required: true }}
+        <Select
+          label="Timezone (IANA)"
+          options={timezoneOptions}
+          value={[values.timezone]}
+          onUpdate={handleTimezoneUpdate}
+          placeholder="Select timezone"
         />
 
         <TextInput
           name="currency"
           type="text"
-          label="Currency (ISO code)"
+          label="Currency"
           value={values.currency}
           onChange={handleTextChange}
-          controlProps={{ required: true, maxLength: 3 }}
+          controlProps={{ required: true, maxLength: 3, readOnly: true }}
         />
 
         {error ? (

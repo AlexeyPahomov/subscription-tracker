@@ -24,7 +24,10 @@ export async function GET() {
     );
     const settings = row ?? USER_SETTINGS_DEFAULTS;
 
-    const payload: UserSettingsQueryData = { settings };
+    const payload: UserSettingsQueryData = {
+      settings,
+      hasPersistedSettings: Boolean(row),
+    };
     return NextResponse.json(payload);
   } catch (error) {
     console.error('[api/settings GET]', error);

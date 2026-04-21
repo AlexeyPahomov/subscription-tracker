@@ -7,4 +7,5 @@ export type UserSettings = {
 
 export type UserSettingsQueryData = {
   settings: UserSettings;
+  hasPersistedSettings: boolean;
 };

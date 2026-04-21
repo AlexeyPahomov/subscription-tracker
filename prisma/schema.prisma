@@ -57,7 +57,7 @@ model UserSettings {
 
   emailNotifications Boolean @default(true)
   remindBefore       Int     @default(1)
-  timezone           String  @default("UTC")
+  timezone           String  @default("Europe/Moscow")
   currency           String  @default("USD")
   lastNotified       DateTime?
 

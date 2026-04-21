@@ -34,7 +34,7 @@ export function Subscriptions() {
 
   if (isLoading) {
     return (
-      <section className="mx-auto flex w-full max-w-5xl flex-1 items-center justify-center px-4 py-10">
+      <section className="fixed inset-0 z-30 grid place-items-center">
         <Loader size="l" />
       </section>
     );

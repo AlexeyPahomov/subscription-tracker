@@ -15,7 +15,7 @@ export default function SettingsPage() {
 
   if (meQuery.isPending || userSettingsQuery.isPending || !meQuery.data || !userSettingsQuery.data) {
     return (
-      <section className="mx-auto flex w-full max-w-2xl flex-1 items-center justify-center px-4 py-10">
+      <section className="fixed inset-0 z-30 grid place-items-center">
         <Loader size="l" />
       </section>
     );
@@ -30,7 +30,10 @@ export default function SettingsPage() {
         Account preferences and app appearance.
       </p>
       <div className="mt-8 space-y-6">
-        <UserSettingsSection initialSettings={userSettingsQuery.data.settings} />
+        <UserSettingsSection
+          initialSettings={userSettingsQuery.data.settings}
+          hasPersistedSettings={userSettingsQuery.data.hasPersistedSettings}
+        />
         <ThemeSettingsSection />
       </div>
     </section>
