@@ -1,16 +1,17 @@
 import { auth } from '@/auth';
 import { prisma } from '@/utils/prisma';
-import { withDbRetry } from '@/utils/dbConnection';
-import type { SubscriptionActionFail } from '@/types/subscription';
+import { withDbRetry, withMutationPoolRecovery } from '@/utils/dbConnection';
 import { redirect } from 'next/navigation';
 
 type AuthenticatedUserId =
   | { ok: true; userId: string }
-  | SubscriptionActionFail;
+  | { ok: false; error: 'unauthorized' | 'unknown' };
 
 async function userRowExists(userId: string) {
-  return withDbRetry(() =>
-    prisma.user.findUnique({ where: { id: userId }, select: { id: true } }),
+  return withMutationPoolRecovery(() =>
+    withDbRetry(() =>
+      prisma.user.findUnique({ where: { id: userId }, select: { id: true } }),
+    ),
   );
 }
 
@@ -20,15 +21,7 @@ export async function getAuthenticatedUserId(): Promise<AuthenticatedUserId> {
   if (!userId) {
     return { ok: false, error: 'unauthorized' };
   }
-  try {
-    const exists = await userRowExists(userId);
-    if (!exists) {
-      return { ok: false, error: 'unauthorized' };
-    }
-    return { ok: true, userId };
-  } catch {
-    return { ok: false, error: 'unknown' };
-  }
+  return { ok: true, userId };
 }
 
 /** Страницы: JWT без строки в User → FK; выход и редирект на главную. */

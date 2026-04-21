@@ -14,6 +14,7 @@ model User {
   password      String
   subscriptions Subscription[]
   categories    Category[]
+  settings      UserSettings?
   createdAt     DateTime       @default(now())
 }
 
@@ -43,10 +44,23 @@ model Subscription {
   categoryId  String?
   category    Category? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
 
-  remindBefore  Int?    
-  lastNotified  DateTime?
-
   createdAt   DateTime  @default(now())
 
   @@index([categoryId])
+}
+
+model UserSettings {
+  id        String   @id @default(cuid())
+
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id])
+
+  emailNotifications Boolean @default(true)
+  remindBefore       Int     @default(1)
+  timezone           String  @default("UTC")
+  currency           String  @default("USD")
+  lastNotified       DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

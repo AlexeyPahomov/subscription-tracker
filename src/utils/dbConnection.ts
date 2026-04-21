@@ -4,7 +4,7 @@ const READ_RETRY =
   /connection|terminated|not queryable|ECONNRESET|ETIMEDOUT|timeout|exceeded|Connection closed|ECONNREFUSED|max clients|pool_size/i;
 
 const MUTATION_POOL_DEAD =
-  /not queryable|Connection terminated|timeout exceeded|ECONNRESET/i;
+  /not queryable|Connection terminated|timeout exceeded|ECONNRESET|Transaction already closed|rollback cannot be executed|Transaction API error|P2028/i;
 
 function isRetryableReadError(e: unknown): boolean {
   if (e && typeof e === 'object' && 'code' in e) {

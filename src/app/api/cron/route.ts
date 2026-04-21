@@ -16,12 +16,16 @@ type CandidateSubscription = {
   currency: string;
   interval: string;
   nextBilling: Date;
-  remindBefore: number | null;
-  lastNotified: Date | null;
   user: {
     id: string;
     name: string | null;
     email: string;
+    settings: {
+      emailNotifications: boolean;
+      remindBefore: number;
+      timezone: string;
+      lastNotified: Date | null;
+    } | null;
   };
 };
 
@@ -31,12 +35,26 @@ type BuildRecipientsResult = {
   skippedNoDueSubscriptions: number;
 };
 
-function isSameUtcDay(left: Date, right: Date): boolean {
-  return (
-    left.getUTCFullYear() === right.getUTCFullYear() &&
-    left.getUTCMonth() === right.getUTCMonth() &&
-    left.getUTCDate() === right.getUTCDate()
-  );
+function getDayKeyInTimezone(date: Date, timezone: string): string {
+  try {
+    return new Intl.DateTimeFormat('en-CA', {
+      timeZone: timezone,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    }).format(date);
+  } catch {
+    return new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'UTC',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    }).format(date);
+  }
+}
+
+function isSameDayInTimezone(left: Date, right: Date, timezone: string): boolean {
+  return getDayKeyInTimezone(left, timezone) === getDayKeyInTimezone(right, timezone);
 }
 
 function isWithinReminderWindow(nextBilling: Date, remindBefore: number, now: Date): boolean {
@@ -48,11 +66,18 @@ async function getCandidateSubscriptions(now: Date): Promise<CandidateSubscripti
   return withDbRetry(() =>
     prisma.subscription.findMany({
       where: {
-        remindBefore: {
-          gt: 0,
-        },
         nextBilling: {
           gte: now,
+        },
+        user: {
+          settings: {
+            is: {
+              emailNotifications: true,
+              remindBefore: {
+                gt: 0,
+              },
+            },
+          },
         },
       },
       select: {
@@ -62,13 +87,19 @@ async function getCandidateSubscriptions(now: Date): Promise<CandidateSubscripti
         currency: true,
         interval: true,
         nextBilling: true,
-        remindBefore: true,
-        lastNotified: true,
         user: {
           select: {
             id: true,
             name: true,
             email: true,
+            settings: {
+              select: {
+                emailNotifications: true,
+                remindBefore: true,
+                timezone: true,
+                lastNotified: true,
+              },
+            },
           },
         },
       },
@@ -84,19 +115,27 @@ function buildRecipients(
   now: Date,
 ): BuildRecipientsResult {
   const recipientsMap = new Map<string, Recipient>();
+  const alreadyNotifiedUsers = new Set<string>();
   let skippedAlreadyNotified = 0;
   let skippedNoDueSubscriptions = 0;
 
   for (const subscription of subscriptions) {
-    const normalizedEmail = subscription.user.email.trim().toLowerCase();
-    if (!normalizedEmail || !subscription.remindBefore) continue;
+    if (alreadyNotifiedUsers.has(subscription.user.id)) continue;
 
-    if (subscription.lastNotified && isSameUtcDay(subscription.lastNotified, now)) {
+    const normalizedEmail = subscription.user.email.trim().toLowerCase();
+    const userSettings = subscription.user.settings;
+    if (!normalizedEmail || !userSettings || !userSettings.emailNotifications) continue;
+
+    const remindBefore = userSettings.remindBefore;
+    if (!remindBefore || remindBefore <= 0) continue;
+
+    if (userSettings.lastNotified && isSameDayInTimezone(userSettings.lastNotified, now, userSettings.timezone)) {
+      alreadyNotifiedUsers.add(subscription.user.id);
       skippedAlreadyNotified += 1;
       continue;
     }
 
-    if (!isWithinReminderWindow(subscription.nextBilling, subscription.remindBefore, now)) {
+    if (!isWithinReminderWindow(subscription.nextBilling, remindBefore, now)) {
       skippedNoDueSubscriptions += 1;
       continue;
     }
@@ -115,14 +154,14 @@ function buildRecipients(
         userId: subscription.user.id,
         name: subscription.user.name,
         email: normalizedEmail,
-        remindBefore: subscription.remindBefore,
+        remindBefore,
         dueSubscriptions: [subscriptionForEmail],
         subscriptionIds: [subscription.id],
       });
       continue;
     }
 
-    existing.remindBefore = Math.max(existing.remindBefore, subscription.remindBefore);
+    existing.remindBefore = Math.max(existing.remindBefore, remindBefore);
     existing.dueSubscriptions.push(subscriptionForEmail);
     existing.subscriptionIds.push(subscription.id);
   }
@@ -160,11 +199,9 @@ async function sendReminderToRecipient(
   }
 
   await withMutationPoolRecovery(() =>
-    prisma.subscription.updateMany({
+    prisma.userSettings.update({
       where: {
-        id: {
-          in: recipient.subscriptionIds,
-        },
+        userId: recipient.userId,
       },
       data: {
         lastNotified: now,

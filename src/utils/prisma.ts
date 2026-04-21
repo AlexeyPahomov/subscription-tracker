@@ -30,12 +30,11 @@ function poolConfigFromEnv(): PoolConfig {
 
   const supabasePooler = raw.includes('pooler.supabase.com');
   const envMax = Number(process.env.PG_POOL_MAX);
-  const poolMax =
-    Number.isFinite(envMax) && envMax > 0
+  const poolMax = supabasePooler
+    ? 1
+    : Number.isFinite(envMax) && envMax > 0
       ? Math.floor(envMax)
-      : supabasePooler
-        ? 1
-        : 10;
+      : 10;
 
   return {
     ...base,

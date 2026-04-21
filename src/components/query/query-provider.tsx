@@ -8,14 +8,18 @@ type AppQueryProviderProps = {
 };
 
 export function AppQueryProvider({ children }: AppQueryProviderProps) {
+  const isDev = process.env.NODE_ENV !== 'production';
   const [queryClient] = useState(
     () =>
       new QueryClient({
         defaultOptions: {
           queries: {
-            staleTime: 60_000,
+            staleTime: isDev ? 5 * 60_000 : 60_000,
             gcTime: 10 * 60_000,
             refetchOnWindowFocus: false,
+            refetchOnReconnect: false,
+            retry: isDev ? 0 : 2,
+            retryOnMount: false,
           },
         },
       }),
