@@ -1,9 +1,9 @@
 import { formatPriceForDisplay } from '@/helpers/formatSubscriptionForClient';
 import { prisma } from '@/utils/prisma';
+import { withDbRetry } from '@/utils/dbConnection';
 import {
   differenceInCalendarDays,
   format,
-  formatDistanceToNow,
   isBefore,
   startOfDay,
 } from 'date-fns';
@@ -27,7 +27,7 @@ function relativePaymentLabel(nextBilling: Date): string {
   const diffDays = differenceInCalendarDays(paymentDay, today);
   if (diffDays === 0) return 'Today';
   if (diffDays === 1) return 'Tomorrow';
-  return formatDistanceToNow(nextBilling, { addSuffix: true });
+  return `in ${diffDays} days`;
 }
 
 function urgencyFromDiffDays(diffDays: number): UpcomingPaymentUrgency {
@@ -42,16 +42,18 @@ export async function getUpcomingPaymentsForUser(
   /** Если не задан — все будущие платежи (в разумном порядке) */
   limit?: number,
 ): Promise<UpcomingPaymentItem[]> {
-  const rows = await prisma.subscription.findMany({
-    where: { userId },
-    select: {
-      id: true,
-      name: true,
-      price: true,
-      currency: true,
-      nextBilling: true,
-    },
-  });
+  const rows = await withDbRetry(() =>
+    prisma.subscription.findMany({
+      where: { userId },
+      select: {
+        id: true,
+        name: true,
+        price: true,
+        currency: true,
+        nextBilling: true,
+      },
+    }),
+  );
 
   const todayStart = startOfDay(new Date());
 
