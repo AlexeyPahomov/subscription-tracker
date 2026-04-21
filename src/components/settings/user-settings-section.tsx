@@ -1,6 +1,7 @@
 'use client';
 import { updateUserSettings } from '@/actions/updateUserSettings';
 import { queryKeys } from '@/constants/query-keys';
+import { SETTINGS_MESSAGES } from '@/constants/messages/settings';
 import { SettingsSection } from '@/components/settings/settings-section';
 import {
   detectInitialTimezone,
@@ -12,20 +13,12 @@ import type {
 } from '@/types/user-settings';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button, Select, TextInput } from '@gravity-ui/uikit';
-import { useMemo, useState, type ChangeEvent, type FormEvent } from 'react';
+import { useMemo, useState, type ChangeEvent, type FormEventHandler } from 'react';
 
 type UserSettingsSectionProps = {
   initialSettings: UserSettings;
   hasPersistedSettings: boolean;
 };
-
-const SETTINGS_MESSAGES = {
-  validationError:
-    'Проверьте: remindBefore 0..30, timezone IANA, currency из 3 букв.',
-  unauthorizedError: 'Сессия истекла, войдите снова.',
-  saveError: 'Не удалось сохранить настройки.',
-  saveSuccess: 'Настройки сохранены.',
-} as const;
 
 export function UserSettingsSection({
   initialSettings,
@@ -87,7 +80,7 @@ export function UserSettingsSection({
     setValues((prev) => ({ ...prev, timezone: value }));
   }
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  const handleSubmit: FormEventHandler<HTMLFormElement> = async (event) => {
     event.preventDefault();
     if (!hasChanges || updateSettingsMutation.isPending) return;
 
@@ -118,7 +111,7 @@ export function UserSettingsSection({
     } catch {
       setError(SETTINGS_MESSAGES.saveError);
     }
-  }
+  };
 
   return (
     <SettingsSection
