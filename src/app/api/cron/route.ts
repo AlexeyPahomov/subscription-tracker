@@ -3,37 +3,18 @@ import { buildReminderEmail } from '@/helpers/buildReminderEmail';
 import type { DueSubscription, Recipient } from '@/types/reminder';
 import { prisma } from '@/utils/prisma';
 import { withDbRetry, withMutationPoolRecovery } from '@/utils/dbConnection';
-
-const resendApiKey = process.env.RESEND_API_KEY;
-const resend = resendApiKey ? new Resend(resendApiKey) : null;
-const fromEmail = process.env.CRON_EMAIL_FROM ?? 'onboarding@resend.dev';
-const MS_PER_DAY = 24 * 60 * 60 * 1000;
-
-type CandidateSubscription = {
-  id: string;
-  name: string;
-  price: number;
-  currency: string;
-  interval: string;
-  nextBilling: Date;
-  user: {
-    id: string;
-    name: string | null;
-    email: string;
-    settings: {
-      emailNotifications: boolean;
-      remindBefore: number;
-      timezone: string;
-      lastNotified: Date | null;
-    } | null;
-  };
-};
-
-type BuildRecipientsResult = {
-  recipients: Recipient[];
-  skippedAlreadyNotified: number;
-  skippedNoDueSubscriptions: number;
-};
+import {
+  DEFAULT_TIMEZONE,
+  DELIVERY_HOURS,
+  fromEmail,
+  MS_PER_DAY,
+  resend,
+} from './constants';
+import type {
+  BuildRecipientsResult,
+  CandidateSubscription,
+  CronStats,
+} from './types';
 
 function getDayKeyInTimezone(date: Date, timezone: string): string {
   try {
@@ -55,6 +36,27 @@ function getDayKeyInTimezone(date: Date, timezone: string): string {
 
 function isSameDayInTimezone(left: Date, right: Date, timezone: string): boolean {
   return getDayKeyInTimezone(left, timezone) === getDayKeyInTimezone(right, timezone);
+}
+
+function resolveHourInTimezone(timezone: string, now: Date): number | null {
+  try {
+    const parts = new Intl.DateTimeFormat('en-US', {
+      timeZone: timezone,
+      hour: 'numeric',
+      hour12: false,
+    }).formatToParts(now);
+
+    const hour = Number(parts.find((part) => part.type === 'hour')?.value);
+    return Number.isFinite(hour) ? hour : null;
+  } catch {
+    return null;
+  }
+}
+
+function isWithinDeliveryWindow(timezone: string, now: Date): boolean {
+  const hour = resolveHourInTimezone(timezone, now);
+  if (hour === null) return DELIVERY_HOURS.has(now.getUTCHours());
+  return DELIVERY_HOURS.has(hour);
 }
 
 function isWithinReminderWindow(nextBilling: Date, remindBefore: number, now: Date): boolean {
@@ -118,6 +120,7 @@ function buildRecipients(
   const alreadyNotifiedUsers = new Set<string>();
   let skippedAlreadyNotified = 0;
   let skippedNoDueSubscriptions = 0;
+  let skippedOutsideDeliveryWindow = 0;
 
   for (const subscription of subscriptions) {
     if (alreadyNotifiedUsers.has(subscription.user.id)) continue;
@@ -125,11 +128,17 @@ function buildRecipients(
     const normalizedEmail = subscription.user.email.trim().toLowerCase();
     const userSettings = subscription.user.settings;
     if (!normalizedEmail || !userSettings || !userSettings.emailNotifications) continue;
+    const timezone = userSettings.timezone || DEFAULT_TIMEZONE;
+
+    if (!isWithinDeliveryWindow(timezone, now)) {
+      skippedOutsideDeliveryWindow += 1;
+      continue;
+    }
 
     const remindBefore = userSettings.remindBefore;
     if (!remindBefore || remindBefore <= 0) continue;
 
-    if (userSettings.lastNotified && isSameDayInTimezone(userSettings.lastNotified, now, userSettings.timezone)) {
+    if (userSettings.lastNotified && isSameDayInTimezone(userSettings.lastNotified, now, timezone)) {
       alreadyNotifiedUsers.add(subscription.user.id);
       skippedAlreadyNotified += 1;
       continue;
@@ -170,6 +179,7 @@ function buildRecipients(
     recipients: [...recipientsMap.values()],
     skippedAlreadyNotified,
     skippedNoDueSubscriptions,
+    skippedOutsideDeliveryWindow,
   };
 }
 
@@ -216,6 +226,13 @@ async function sendReminderToRecipient(
   };
 }
 
+function buildCronStats(stats: CronStats) {
+  return {
+    ok: true,
+    ...stats,
+  };
+}
+
 export async function GET(req: Request) {
   const auth = req.headers.get('authorization');
 
@@ -233,21 +250,23 @@ export async function GET(req: Request) {
 
   const now = new Date();
   const subscriptions = await getCandidateSubscriptions(now);
-  const { recipients, skippedAlreadyNotified, skippedNoDueSubscriptions } = buildRecipients(
-    subscriptions,
-    now,
-  );
+  const {
+    recipients,
+    skippedAlreadyNotified,
+    skippedNoDueSubscriptions,
+    skippedOutsideDeliveryWindow,
+  } = buildRecipients(subscriptions, now);
 
   if (recipients.length === 0) {
-    return Response.json({
-      ok: true,
+    return Response.json(buildCronStats({
       sentCount: 0,
       failedCount: 0,
       recipientsCount: 0,
       processedSubscriptionsCount: 0,
       skippedAlreadyNotified,
       skippedNoDueSubscriptions,
-    });
+      skippedOutsideDeliveryWindow,
+    }));
   }
 
   try {
@@ -269,15 +288,15 @@ export async function GET(req: Request) {
       );
     }
 
-    return Response.json({
-      ok: true,
+    return Response.json(buildCronStats({
       sentCount: successful.length,
       failedCount: failed.length,
       recipientsCount: recipients.length,
       processedSubscriptionsCount,
       skippedAlreadyNotified,
       skippedNoDueSubscriptions,
-    });
+      skippedOutsideDeliveryWindow,
+    }));
   } catch {
     return Response.json({ ok: false, error: 'Failed to send email' }, { status: 500 });
   }
