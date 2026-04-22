@@ -2,9 +2,32 @@
 
 import { useAuthModals } from '@/components/auth/auth-modals-provider';
 import { Button } from '@gravity-ui/uikit';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useSession } from 'next-auth/react';
+import { useEffect } from 'react';
+
+const DEFAULT_AUTH_REDIRECT_PATH = '/dashboard';
+
+function resolveReturnTo(rawReturnTo: string | null): string {
+  if (!rawReturnTo) return DEFAULT_AUTH_REDIRECT_PATH;
+  if (!rawReturnTo.startsWith('/') || rawReturnTo.startsWith('//')) {
+    return DEFAULT_AUTH_REDIRECT_PATH;
+  }
+  return rawReturnTo;
+}
 
 export function LandingPage() {
   const { openGetStarted } = useAuthModals();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const { status } = useSession();
+  const returnTo = resolveReturnTo(searchParams.get('returnTo'));
+
+  useEffect(() => {
+    if (status === 'authenticated') {
+      router.replace(returnTo);
+    }
+  }, [returnTo, router, status]);
 
   return (
     <section className="flex flex-col items-center justify-center gap-8 py-20">
