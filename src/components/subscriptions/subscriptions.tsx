@@ -2,6 +2,7 @@
 
 import {
   useSubscriptions,
+  type SubscriptionsHttpError,
 } from '@/hooks/useSubscriptions';
 import {
   SubscriptionActions,
@@ -31,8 +32,9 @@ export function Subscriptions() {
 
   useScrollToSubscriptionFromHash(subscriptions);
   useRedirectOnUnauthorized(error);
+  const isUnauthorizedError = (error as SubscriptionsHttpError | null)?.status === 401;
 
-  if (isLoading) {
+  if (isLoading || isUnauthorizedError) {
     return (
       <section className="fixed inset-0 z-30 grid place-items-center">
         <Loader size="l" />

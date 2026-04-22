@@ -12,6 +12,7 @@ import { useForm } from '@/hooks/useForm';
 import { useModal } from '@/hooks/useModal';
 import { Button, Dialog, PasswordInput, TextInput } from '@gravity-ui/uikit';
 import { useNavigation } from '@/components/navigation/navigation-provider';
+import { useSearchParams } from 'next/navigation';
 import { signIn } from 'next-auth/react';
 import {
   createContext,
@@ -33,12 +34,23 @@ type AuthModalsContextValue = {
 };
 
 const AuthModalsContext = createContext<AuthModalsContextValue | null>(null);
+const DEFAULT_AUTH_REDIRECT_PATH = '/dashboard';
+
+function resolvePostAuthPath(rawReturnTo: string | null): string {
+  if (!rawReturnTo) return DEFAULT_AUTH_REDIRECT_PATH;
+  if (!rawReturnTo.startsWith('/') || rawReturnTo.startsWith('//')) {
+    return DEFAULT_AUTH_REDIRECT_PATH;
+  }
+  return rawReturnTo;
+}
 
 export function AuthModalsProvider({ children }: { children: ReactNode }) {
   const { navigate } = useNavigation();
+  const searchParams = useSearchParams();
   const loginModal = useModal();
   const registerModal = useModal();
   const getStartedModal = useModal();
+  const postAuthPath = resolvePostAuthPath(searchParams.get('returnTo'));
 
   const {
     values: loginValues,
@@ -101,7 +113,7 @@ export function AuthModalsProvider({ children }: { children: ReactNode }) {
       }
       loginModal.close();
       setLoginValues({ email: '', password: '' });
-      navigate('/dashboard');
+      navigate(postAuthPath);
     } finally {
       setLoginPending(false);
     }
@@ -123,7 +135,7 @@ export function AuthModalsProvider({ children }: { children: ReactNode }) {
       }
       getStartedModal.close();
       setLoginValues({ email: '', password: '' });
-      navigate('/dashboard');
+      navigate(postAuthPath);
     } finally {
       setLoginPending(false);
     }
@@ -168,7 +180,7 @@ export function AuthModalsProvider({ children }: { children: ReactNode }) {
       }
       registerModal.close();
       setRegisterValues({ name: '', email: '', password: '' });
-      navigate('/dashboard');
+      navigate(postAuthPath);
     } finally {
       setRegPending(false);
     }
