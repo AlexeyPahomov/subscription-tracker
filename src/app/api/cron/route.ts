@@ -150,6 +150,7 @@ function buildRecipients(
     }
 
     const subscriptionForEmail: DueSubscription = {
+      id: subscription.id,
       name: subscription.name,
       price: subscription.price,
       currency: subscription.currency,

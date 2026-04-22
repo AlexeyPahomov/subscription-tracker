@@ -7,6 +7,7 @@ type BuildReminderEmailInput = {
 };
 
 const EMAIL_LOCALE = 'ru-RU';
+const APP_SUBSCRIPTIONS_URL = 'https://subscription-tracker-blond-alpha.vercel.app/subscriptions';
 
 function escapeHtml(value: string): string {
   return value
@@ -43,6 +44,10 @@ function formatInterval(interval: string): string {
   return interval;
 }
 
+function buildSubscriptionLink(subscriptionId: string): string {
+  return `${APP_SUBSCRIPTIONS_URL}#subscription-${encodeURIComponent(subscriptionId)}`;
+}
+
 export function buildReminderEmail(input: BuildReminderEmailInput): {
   subject: string;
   html: string;
@@ -53,7 +58,8 @@ export function buildReminderEmail(input: BuildReminderEmailInput): {
         `<li style="margin-bottom:8px;">
           <strong>${escapeHtml(subscription.name)}</strong><br/>
           ${formatPrice(subscription.price, subscription.currency)} • ${formatInterval(subscription.interval)}<br/>
-          Списание: ${formatBillingDate(subscription.nextBilling)}
+          Списание: ${formatBillingDate(subscription.nextBilling)}<br/>
+          <a href="${escapeHtml(buildSubscriptionLink(subscription.id))}">Открыть в приложении</a>
         </li>`,
     )
     .join('');

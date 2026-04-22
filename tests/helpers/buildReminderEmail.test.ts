@@ -8,6 +8,7 @@ describe('buildReminderEmail', () => {
       remindBefore: 3,
       dueSubscriptions: [
         {
+          id: 'cmo7d8deq000704jmofvstkmi',
           name: 'Netflix & Chill',
           price: 12.5,
           currency: 'USD',
@@ -23,6 +24,9 @@ describe('buildReminderEmail', () => {
     expect(result.html).toContain('ежемесячно');
     expect(result.html).toContain('В ближайшие 3 дн.');
     expect(result.html).toContain('Списание:');
+    expect(result.html).toContain(
+      'https://subscription-tracker-blond-alpha.vercel.app/subscriptions#subscription-cmo7d8deq000704jmofvstkmi',
+    );
   });
 
   it('uses plural subject for multiple subscriptions', () => {
@@ -31,6 +35,7 @@ describe('buildReminderEmail', () => {
       remindBefore: 7,
       dueSubscriptions: [
         {
+          id: 'sub-notion',
           name: 'Notion',
           price: 10,
           currency: 'USD',
@@ -38,6 +43,7 @@ describe('buildReminderEmail', () => {
           nextBilling: new Date('2026-04-25T00:00:00.000Z'),
         },
         {
+          id: 'sub-figma',
           name: 'Figma',
           price: 20,
           currency: 'USD',

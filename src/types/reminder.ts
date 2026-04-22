@@ -1,4 +1,5 @@
 export type DueSubscription = {
+  id: string;
   name: string;
   price: number;
   currency: string;
