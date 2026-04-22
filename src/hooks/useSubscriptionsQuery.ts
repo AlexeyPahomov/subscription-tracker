@@ -32,5 +32,10 @@ export function useSubscriptionsQuery() {
   return useQuery({
     queryKey: queryKeys.subscriptions,
     queryFn: fetchSubscriptionsData,
+    retry: (failureCount, error) => {
+      const status = (error as SubscriptionsHttpError | null)?.status;
+      if (status === 401) return false;
+      return failureCount < 3;
+    },
   });
 }
