@@ -3,7 +3,7 @@
 import { layoutConfig } from '@/config/layout.config';
 import { Loader } from '@gravity-ui/uikit';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import {
   createContext,
   useCallback,
@@ -25,11 +25,13 @@ const NavigationContext = createContext<NavigationContextValue | null>(null);
 export function NavigationProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const queryString = searchParams.toString();
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     setLoading(false);
-  }, [pathname]);
+  }, [pathname, queryString]);
 
   const beginNavigation = useCallback(() => {
     setLoading(true);
