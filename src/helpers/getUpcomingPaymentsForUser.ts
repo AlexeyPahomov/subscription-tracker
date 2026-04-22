@@ -14,8 +14,10 @@ export type UpcomingPaymentUrgency = 'urgent' | 'soon' | 'normal';
 export type UpcomingPaymentItem = {
   id: string;
   name: string;
+  price: number;
+  currency: string;
+  withinNext7Days: boolean;
   priceLabel: string;
-  /** Напр. Apr 20 */
   dateLabel: string;
   relativeLabel: string;
   urgency: UpcomingPaymentUrgency;
@@ -67,8 +69,7 @@ export async function getUpcomingPaymentsForUser(
         new Date(a.nextBilling).getTime() - new Date(b.nextBilling).getTime(),
     );
 
-  const upcoming =
-    limit === undefined ? sorted : sorted.slice(0, limit);
+  const upcoming = limit === undefined ? sorted : sorted.slice(0, limit);
 
   return upcoming.map((row) => {
     const nextBilling = new Date(row.nextBilling);
@@ -78,6 +79,9 @@ export async function getUpcomingPaymentsForUser(
     return {
       id: row.id,
       name: row.name,
+      price: row.price,
+      currency: row.currency,
+      withinNext7Days: diffDays >= 0 && diffDays < 7,
       priceLabel: formatPriceForDisplay(row.price, row.currency),
       dateLabel: format(nextBilling, 'MMM d', { locale: enUS }),
       relativeLabel: relativePaymentLabel(nextBilling),

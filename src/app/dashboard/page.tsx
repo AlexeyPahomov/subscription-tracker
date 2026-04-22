@@ -37,7 +37,14 @@ export default function DashboardPage() {
     return <DashboardSkeleton />;
   }
 
-  const { analytics, upcomingPreview, nextPayment, showViewAllUpcoming } =
+  const {
+    analytics,
+    upcomingPreview,
+    upcomingWeekTotalLabel,
+    upcomingWeekTotalSeverity,
+    nextPayment,
+    showViewAllUpcoming,
+  } =
     query.data.viewModel;
 
   return (
@@ -54,6 +61,8 @@ export default function DashboardPage() {
 
       <UpcomingPayments
         items={upcomingPreview}
+        upcomingWeekTotalLabel={upcomingWeekTotalLabel}
+        upcomingWeekTotalSeverity={upcomingWeekTotalSeverity}
         showViewAll={showViewAllUpcoming}
       />
 
