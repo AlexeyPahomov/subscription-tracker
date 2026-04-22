@@ -11,8 +11,7 @@ import { useDialogScrollLock } from '@/hooks/useDialogScrollLock';
 import { useForm } from '@/hooks/useForm';
 import { useModal } from '@/hooks/useModal';
 import { Button, Dialog, PasswordInput, TextInput } from '@gravity-ui/uikit';
-import { useNavigation } from '@/components/navigation/navigation-provider';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { signIn } from 'next-auth/react';
 import {
   createContext,
@@ -45,7 +44,7 @@ function resolvePostAuthPath(rawReturnTo: string | null): string {
 }
 
 export function AuthModalsProvider({ children }: { children: ReactNode }) {
-  const { navigate } = useNavigation();
+  const router = useRouter();
   const searchParams = useSearchParams();
   const loginModal = useModal();
   const registerModal = useModal();
@@ -113,7 +112,7 @@ export function AuthModalsProvider({ children }: { children: ReactNode }) {
       }
       loginModal.close();
       setLoginValues({ email: '', password: '' });
-      navigate(postAuthPath);
+      router.replace(postAuthPath);
     } finally {
       setLoginPending(false);
     }
@@ -135,7 +134,7 @@ export function AuthModalsProvider({ children }: { children: ReactNode }) {
       }
       getStartedModal.close();
       setLoginValues({ email: '', password: '' });
-      navigate(postAuthPath);
+      router.replace(postAuthPath);
     } finally {
       setLoginPending(false);
     }
@@ -180,7 +179,7 @@ export function AuthModalsProvider({ children }: { children: ReactNode }) {
       }
       registerModal.close();
       setRegisterValues({ name: '', email: '', password: '' });
-      navigate(postAuthPath);
+      router.replace(postAuthPath);
     } finally {
       setRegPending(false);
     }
