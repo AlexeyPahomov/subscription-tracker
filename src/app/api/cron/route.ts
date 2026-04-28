@@ -16,6 +16,8 @@ import type {
   CronStats,
 } from './types';
 
+const CRON_LOG_PREFIX = '[cron/reminders]';
+
 function getDayKeyInTimezone(date: Date, timezone: string): string {
   try {
     return new Intl.DateTimeFormat('en-CA', {
@@ -238,11 +240,13 @@ export async function GET(req: Request) {
   const auth = req.headers.get('authorization');
 
   if (auth !== `Bearer ${process.env.CRON_SECRET}`) {
+    console.warn(`${CRON_LOG_PREFIX} unauthorized request`);
     return new Response('Unauthorized', { status: 401 });
   }
 
   const resendClient = resend;
   if (!resendClient) {
+    console.error(`${CRON_LOG_PREFIX} RESEND_API_KEY is not set`);
     return Response.json(
       { ok: false, error: 'RESEND_API_KEY is not set' },
       { status: 500 }
@@ -250,15 +254,41 @@ export async function GET(req: Request) {
   }
 
   const now = new Date();
-  const subscriptions = await getCandidateSubscriptions(now);
+  console.info(`${CRON_LOG_PREFIX} run started`, {
+    nowIso: now.toISOString(),
+  });
+
+  let subscriptions: CandidateSubscription[];
+  try {
+    subscriptions = await getCandidateSubscriptions(now);
+    console.info(`${CRON_LOG_PREFIX} candidate subscriptions fetched`, {
+      count: subscriptions.length,
+    });
+  } catch (error) {
+    console.error(`${CRON_LOG_PREFIX} failed to fetch candidate subscriptions`, {
+      error: error instanceof Error ? error.message : String(error),
+    });
+    return Response.json(
+      { ok: false, error: 'Failed to fetch candidate subscriptions' },
+      { status: 500 },
+    );
+  }
+
   const {
     recipients,
     skippedAlreadyNotified,
     skippedNoDueSubscriptions,
     skippedOutsideDeliveryWindow,
   } = buildRecipients(subscriptions, now);
+  console.info(`${CRON_LOG_PREFIX} recipients prepared`, {
+    recipientsCount: recipients.length,
+    skippedAlreadyNotified,
+    skippedNoDueSubscriptions,
+    skippedOutsideDeliveryWindow,
+  });
 
   if (recipients.length === 0) {
+    console.info(`${CRON_LOG_PREFIX} no recipients to notify`);
     return Response.json(buildCronStats({
       sentCount: 0,
       failedCount: 0,
@@ -271,24 +301,51 @@ export async function GET(req: Request) {
   }
 
   try {
+    console.info(`${CRON_LOG_PREFIX} send started`, {
+      recipients: recipients.map((recipient) => recipient.email),
+    });
     const sendResults = await Promise.allSettled(
       recipients.map((recipient) => sendReminderToRecipient(recipient, now, resendClient)),
     );
 
     const successful = sendResults.filter((result) => result.status === 'fulfilled');
     const failed = sendResults.filter((result) => result.status === 'rejected');
+    if (failed.length > 0) {
+      console.error(`${CRON_LOG_PREFIX} send failures`, {
+        failedRecipients: sendResults
+          .map((result, index) =>
+            result.status === 'rejected'
+              ? {
+                  email: recipients[index]?.email,
+                  reason:
+                    result.reason instanceof Error
+                      ? result.reason.message
+                      : String(result.reason),
+                }
+              : null,
+          )
+          .filter(Boolean),
+      });
+    }
+
     const processedSubscriptionsCount = successful.reduce(
       (sum, result) => sum + result.value.processedSubscriptionsCount,
       0,
     );
 
     if (successful.length === 0) {
+      console.error(`${CRON_LOG_PREFIX} all sends failed`);
       return Response.json(
         { ok: false, error: 'Failed to send emails to all recipients' },
         { status: 500 },
       );
     }
 
+    console.info(`${CRON_LOG_PREFIX} send completed`, {
+      sentCount: successful.length,
+      failedCount: failed.length,
+      processedSubscriptionsCount,
+    });
     return Response.json(buildCronStats({
       sentCount: successful.length,
       failedCount: failed.length,
@@ -298,7 +355,10 @@ export async function GET(req: Request) {
       skippedNoDueSubscriptions,
       skippedOutsideDeliveryWindow,
     }));
-  } catch {
+  } catch (error) {
+    console.error(`${CRON_LOG_PREFIX} unexpected send pipeline error`, {
+      error: error instanceof Error ? error.message : String(error),
+    });
     return Response.json({ ok: false, error: 'Failed to send email' }, { status: 500 });
   }
 }
