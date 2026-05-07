@@ -9,7 +9,8 @@
     "start": "next start",
     "postinstall": "prisma generate",
     "lint": "eslint",
-    "test": "vitest run"
+    "test": "vitest run",
+    "release": "standard-version"
   },
   "dependencies": {
     "@gravity-ui/date-components": "^3.4.2",
@@ -41,6 +42,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.1",
     "prisma": "^7.5.0",
+    "standard-version": "^9.5.0",
     "tailwindcss": "^4",
     "typescript": "^5",
     "vitest": "^4.1.4"
