@@ -1,8 +1,9 @@
 {
+  "//": "Run at 07:00 UTC to hit 10:00 Europe/Moscow delivery window (9-10 local).",
   "crons": [
     {
       "path": "/api/cron",
-      "schedule": "0 10 * * *"
+      "schedule": "0 7 * * *"
     }
   ]
 }
