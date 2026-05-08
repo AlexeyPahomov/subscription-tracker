@@ -6,6 +6,7 @@ import type { IntervalValue } from '@/types/subscription';
 import type { Subscription } from '@/types/subscription';
 import { defaultSubscriptionCurrency } from '@/constants';
 import { isIntervalValue } from '@/helpers/isIntervalValue';
+import { resolveNextBillingDate } from '@/helpers/resolveNextBillingDate';
 
 function normalizeInterval(value: string): IntervalValue {
   return isIntervalValue(value) ? value : 'monthly';
@@ -43,12 +44,15 @@ type SubscriptionRow = DbSubscription & { category?: DbCategory | null };
 
 export function formatSubscriptionForClient(row: SubscriptionRow): Subscription {
   const cat = row.category;
+  const interval = normalizeInterval(row.interval);
+  const nextBilling = resolveNextBillingDate(new Date(row.nextBilling), interval);
+
   return {
     id: row.id,
     name: row.name,
     price: formatPriceForDisplay(row.price, row.currency),
-    interval: normalizeInterval(row.interval),
-    nextPaymentDate: formatDisplayDate(new Date(row.nextBilling)),
+    interval,
+    nextPaymentDate: formatDisplayDate(nextBilling),
     category: cat
       ? {
           id: cat.id,

@@ -1,5 +1,6 @@
 import { Resend } from 'resend';
 import { buildReminderEmail } from '@/helpers/buildReminderEmail';
+import { resolveNextBillingDates } from '@/helpers/resolveNextBillingDate';
 import type { DueSubscription, Recipient } from '@/types/reminder';
 import { prisma } from '@/utils/prisma';
 import { withDbRetry, withMutationPoolRecovery } from '@/utils/dbConnection';
@@ -67,12 +68,9 @@ function isWithinReminderWindow(nextBilling: Date, remindBefore: number, now: Da
 }
 
 async function getCandidateSubscriptions(now: Date): Promise<CandidateSubscription[]> {
-  return withDbRetry(() =>
+  const rows = await withDbRetry(() =>
     prisma.subscription.findMany({
       where: {
-        nextBilling: {
-          gte: now,
-        },
         user: {
           settings: {
             is: {
@@ -107,11 +105,11 @@ async function getCandidateSubscriptions(now: Date): Promise<CandidateSubscripti
           },
         },
       },
-      orderBy: {
-        nextBilling: 'asc',
-      },
     }),
   );
+
+  return resolveNextBillingDates(rows, now)
+    .sort((a, b) => a.nextBilling.getTime() - b.nextBilling.getTime());
 }
 
 function buildRecipients(

@@ -1,6 +1,7 @@
 import { formatPriceForDisplay } from '@/helpers/formatSubscriptionForClient';
 import { prisma } from '@/utils/prisma';
 import { withDbRetry } from '@/utils/dbConnection';
+import { resolveNextBillingDates } from '@/helpers/resolveNextBillingDate';
 import {
   differenceInCalendarDays,
   format,
@@ -52,6 +53,7 @@ export async function getUpcomingPaymentsForUser(
         name: true,
         price: true,
         currency: true,
+        interval: true,
         nextBilling: true,
       },
     }),
@@ -59,7 +61,7 @@ export async function getUpcomingPaymentsForUser(
 
   const todayStart = startOfDay(new Date());
 
-  const sorted = rows
+  const sorted = resolveNextBillingDates(rows)
     .filter((row) => {
       const d = startOfDay(new Date(row.nextBilling));
       return !isBefore(d, todayStart);
