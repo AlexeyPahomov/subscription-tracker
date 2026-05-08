@@ -1,0 +1,66 @@
+# Changelog
+
+All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
+
+## 1.1.0 (2026-05-08)
+
+
+### Features
+
+* актуализация следующей даты оплаты ([51a8b7d](https://github.com/AlexeyPahomov/subscription-tracker/commit/51a8b7d31d62a9fe606e963ffd3535a4895ae779))
+* выбор темы в настройках ([4262891](https://github.com/AlexeyPahomov/subscription-tracker/commit/42628918ca7d95a7825f29ff7792481e59e73671))
+* дашборды ([3c0defe](https://github.com/AlexeyPahomov/subscription-tracker/commit/3c0defef2d27b85091c2ef4808d06c79ecda64e6))
+* добавить в письмо якорь на подписку ([750c595](https://github.com/AlexeyPahomov/subscription-tracker/commit/750c5954bc3f36eef3a33ad02fd97c6715c05e00))
+* добавить подписки в схему Призмы ([66da33f](https://github.com/AlexeyPahomov/subscription-tracker/commit/66da33ff6e6360eaf35dd585588d9aa9bc7ffe90))
+* добавить хэдер ([ebc1507](https://github.com/AlexeyPahomov/subscription-tracker/commit/ebc1507b27eb400eba8b9fdceeeb59dcf59b3ef8))
+* добавить prisma и подключить базу postgre ([51cc8c7](https://github.com/AlexeyPahomov/subscription-tracker/commit/51cc8c7ee8b58fdec89e0cf6f3396a9a794afeb1))
+* категории и переходы ([821b0f5](https://github.com/AlexeyPahomov/subscription-tracker/commit/821b0f554dba3b587859e7ab0edbb46a193fec11))
+* категории подписок ([8f3c22a](https://github.com/AlexeyPahomov/subscription-tracker/commit/8f3c22aa6044ef3df66fe889458842ba264af9dc))
+* меню профиля в хедер ([53b6414](https://github.com/AlexeyPahomov/subscription-tracker/commit/53b6414a39a4b4b7db92cb2abc39433b2c0b8b9e))
+* мобильное меню ([c3c9696](https://github.com/AlexeyPahomov/subscription-tracker/commit/c3c9696cb38a9364eca48ef101490975d5fbf773))
+* модалка авторизации ([af334fa](https://github.com/AlexeyPahomov/subscription-tracker/commit/af334fadcbac093eb7ba7ee08d8325b7f1235250))
+* модалка регистрации ([871acb9](https://github.com/AlexeyPahomov/subscription-tracker/commit/871acb96f16eb266bb328983d8478811a480377e))
+* настройки пользователя ([5ecf1aa](https://github.com/AlexeyPahomov/subscription-tracker/commit/5ecf1aab14135030528bdfc69f039e782c345dac))
+* основная страница дашборд ([5c186d0](https://github.com/AlexeyPahomov/subscription-tracker/commit/5c186d0e8835f3ec24c4075ebe8a83f88883d18b))
+* отключение частой генерации prisma client ([2043687](https://github.com/AlexeyPahomov/subscription-tracker/commit/2043687c9cd52d8d886e89a1eb512700a67b42ef))
+* переход на tanstack query ([a7936b2](https://github.com/AlexeyPahomov/subscription-tracker/commit/a7936b2d703d02067692568255c15d080e150ae6))
+* плавные переходы между станицами, лоадер ([b05347b](https://github.com/AlexeyPahomov/subscription-tracker/commit/b05347b788546e91d54a65f813a2ad8c5ac643bb))
+* подключение cron ([ebc59a2](https://github.com/AlexeyPahomov/subscription-tracker/commit/ebc59a2be5a32329d6d611d7f2a6e1ad9b3df00e))
+* подключить и настроить отправку писем ([1ef2a82](https://github.com/AlexeyPahomov/subscription-tracker/commit/1ef2a8219a7f2c07e96e956e18da297f8ba2a1ae))
+* подключить таймзону в cron ([1a68c73](https://github.com/AlexeyPahomov/subscription-tracker/commit/1a68c73c7b6e93f7d35b665b0df8315d5ee9217e))
+* подключить управление подписками к бд, рефактор ([ebadbc9](https://github.com/AlexeyPahomov/subscription-tracker/commit/ebadbc9cef1e16879bf668c08b5381e1e19af82b))
+* регистрация пользователя ([ba4a9d2](https://github.com/AlexeyPahomov/subscription-tracker/commit/ba4a9d2dfd625a2c3dc61c0b1d52b9652bca32bd))
+* список и карточка подписки ([092d916](https://github.com/AlexeyPahomov/subscription-tracker/commit/092d916a217952c88d349e3aa0c0eac44bc5df38))
+* страница настроек пользователя ([ecf888d](https://github.com/AlexeyPahomov/subscription-tracker/commit/ecf888d0a87786ff45219585ebe97ec077135726))
+* управление подписками ([3dfa191](https://github.com/AlexeyPahomov/subscription-tracker/commit/3dfa191db53de51c6c661fdc80ba59d7a47ebb82))
+* hero ui ([c75cbd9](https://github.com/AlexeyPahomov/subscription-tracker/commit/c75cbd95201ae6d123a30fc1529021d0be5a9a84))
+* upcoming in next week ([29ef866](https://github.com/AlexeyPahomov/subscription-tracker/commit/29ef866d6dfc9b6a85ee74f54e6f6c4f559ae88a))
+
+
+### Bug Fixes
+
+* блюр при модалке ([699117c](https://github.com/AlexeyPahomov/subscription-tracker/commit/699117c7065596659a4eb41ed5e02e429301eebf))
+* единый лоадер ([f55d09b](https://github.com/AlexeyPahomov/subscription-tracker/commit/f55d09bad64a29b84ae6e72b4496c5983eb3a4d6))
+* исправить мигание при переходе между страницами ([67bfc64](https://github.com/AlexeyPahomov/subscription-tracker/commit/67bfc6410df4f35c80ac686bd5760741e1b610e8))
+* конфиг призмы ([d97b18c](https://github.com/AlexeyPahomov/subscription-tracker/commit/d97b18c7778bb47c1fa07c5d32614d4c749f8470))
+* лоадер на контент ([b37a789](https://github.com/AlexeyPahomov/subscription-tracker/commit/b37a789537dc8fab529f3c77f3dc8e0d61b19390))
+* лоадер при редиректе ([e2dc53c](https://github.com/AlexeyPahomov/subscription-tracker/commit/e2dc53c2eb4e52a0304ee75d6b86071acdf87319))
+* меню, скроллы, лоадеры на мобилках ([e160d7a](https://github.com/AlexeyPahomov/subscription-tracker/commit/e160d7af7bc878b4b4ab13f640b31c8fcdf66983))
+* модалки авторизации и регистрации ([46721c7](https://github.com/AlexeyPahomov/subscription-tracker/commit/46721c772d2c2a32324137a0117cd076bd292040))
+* модалки и оверлеи ([43c1fab](https://github.com/AlexeyPahomov/subscription-tracker/commit/43c1fabcf00d0d5c22c524e5602be10444355fdb))
+* окно отправки писем ([21431cb](https://github.com/AlexeyPahomov/subscription-tracker/commit/21431cbf9ae6695ae03d709c30919d3d900f54cf))
+* отображение кнопок без авторизации ([915cea6](https://github.com/AlexeyPahomov/subscription-tracker/commit/915cea6290562812ac502a9316de4035f25e0dee))
+* перерендеры ([b910475](https://github.com/AlexeyPahomov/subscription-tracker/commit/b91047598008e20b8ec89b660fa1945aec16f6dd))
+* работа с бд ([efca5c4](https://github.com/AlexeyPahomov/subscription-tracker/commit/efca5c49c96c011a8d084266c81d0ab1bfa9c23b))
+* расположение иконок тем ([7ba2ef7](https://github.com/AlexeyPahomov/subscription-tracker/commit/7ba2ef7eb43168b7bcac9f86689b0599b2570a18))
+* расчёт остатка дней ([22e95ef](https://github.com/AlexeyPahomov/subscription-tracker/commit/22e95ef16d16b49c74c6b7420fdf79941382bc73))
+* редирект ([4e39337](https://github.com/AlexeyPahomov/subscription-tracker/commit/4e39337bf44624b1630d009ac38ccaad2537b321))
+* редирект для неавторизированных ([737033d](https://github.com/AlexeyPahomov/subscription-tracker/commit/737033d58aa65dc6557e526bf6bd034c18392cc0))
+* редирект по хеш пути ([bfdca35](https://github.com/AlexeyPahomov/subscription-tracker/commit/bfdca3507cef6b71481e078833b8820e4e036802))
+* редирект после авторизации ([3121631](https://github.com/AlexeyPahomov/subscription-tracker/commit/3121631d0d08e04664dd53c4c4823bfcea8c9563))
+* редиректы при авторизации ([683df33](https://github.com/AlexeyPahomov/subscription-tracker/commit/683df33bdef89fac1c9e46e746df86204d610fdf))
+* скрыть навигацию на лендинге ([0d2470b](https://github.com/AlexeyPahomov/subscription-tracker/commit/0d2470b34574550dd9eaf9e1b26d2b1bde0a2be2))
+* таймзона ([e1404f3](https://github.com/AlexeyPahomov/subscription-tracker/commit/e1404f3ed231b496fe721a606666ca5fa31f0c57))
+* центрировать навигацию хедера ([7d64b6d](https://github.com/AlexeyPahomov/subscription-tracker/commit/7d64b6d9bedde69ea7f3770ccb4d29ab2b85a3cc))
+* cron ([c0088cc](https://github.com/AlexeyPahomov/subscription-tracker/commit/c0088cc33d6321f22035130bc4cca23d7def74c7))
+* vercel schema ([be56006](https://github.com/AlexeyPahomov/subscription-tracker/commit/be5600636657d3c3b4df74f191889d3dc99f43e5))
